@@ -4,14 +4,21 @@ import { useSession } from "next-auth/react";
 import HeaderDesktop from "./HeaderDesktop";
 import HeaderMobile from "./HeaderMobile";
 import { useQueryCategoriesDomain } from "@/hooks/useCategory";
+import { useParams } from "next/navigation";
+import { Domain } from "@prisma/client";
 
-const Header = () => {
+interface Props {
+  currentDomain?: Domain;
+}
+
+const Header = ({ currentDomain }: Props) => {
   const { data: dataSession } = useSession();
+  const params = useParams();
 
-  const domainName = dataSession?.user.domainName;
-  const domainUrl = dataSession?.user.domainUrl;
+  const domainUrl = currentDomain?.url || (params?.domain as string) || dataSession?.user.domainUrl;
+  const domainName = currentDomain?.name || dataSession?.user.domainName;
 
-  const { data: allCategories } = useQueryCategoriesDomain();
+  const { data: allCategories } = useQueryCategoriesDomain(domainUrl || '');
 
   return (
     <header className="w-full sticky top-0 left-0 px-4">

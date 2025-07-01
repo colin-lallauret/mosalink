@@ -11,11 +11,12 @@ import BookmarkBoard from "../BookmarkBoard";
 
 interface Props {
   id: string;
+  domain: string;
   titleBoard?: string;
 }
 
-const DomainBoard = ({ id, titleBoard }: Props) => {
-  const { data: bookmarks, isLoading, isError } = useQueryBookmarksDomain();
+const DomainBoard = ({ id, domain, titleBoard }: Props) => {
+  const { data: bookmarks, isLoading, isError } = useQueryBookmarksDomain(domain);
   const { data: session } = useSession();
 
   if (isError) {
@@ -24,7 +25,7 @@ const DomainBoard = ({ id, titleBoard }: Props) => {
 
   return (
     <Board>
-      <TitleBoard>{session?.user.domainName}</TitleBoard>
+      <TitleBoard>{domain}</TitleBoard>
       <BookmarkBoard bookmarks={bookmarks ?? []} isLoading={isLoading} />
     </Board>
   );

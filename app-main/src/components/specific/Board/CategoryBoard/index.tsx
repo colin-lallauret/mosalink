@@ -12,9 +12,10 @@ import BookmarkBoard from "../BookmarkBoard";
 
 interface Props {
   id: string;
+  domain: string;
 }
 
-const CategoryBoard = ({ id }: Props) => {
+const CategoryBoard = ({ id, domain }: Props) => {
   const {
     data: bookmarks,
     isLoading,
@@ -24,7 +25,7 @@ const CategoryBoard = ({ id }: Props) => {
     data: categories,
     isLoading: isLoadingCategories,
     isError: isErrorCategories,
-  } = useQueryCategoriesDomain();
+  } = useQueryCategoriesDomain(domain);
 
   const titleContent = useMemo(() => {
     if (isLoadingCategories) {

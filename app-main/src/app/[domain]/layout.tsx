@@ -4,6 +4,7 @@ import { routeDomainFront } from "@/utils/routes/routesFront";
 import Header from "@/components/specific/Header";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import Footer from "@/components/specific/Footer";
+import prisma from "../../../lib/prisma";
 
 export interface ParamsDomainRoute {
   params: {
@@ -21,12 +22,25 @@ export default async function Layout({ children, params }: Props) {
     return redirect("/login");
   }
 
-  if (session.user.domainUrl !== params.domain) {
-    return redirect(routeDomainFront(session.user.domainUrl));
+  const requestedDomain = await prisma.domain.findFirst({
+    where: { 
+      url: params.domain,
+      isPublish: true,
+      users: {
+        some: {
+          id: session.user.id
+        }
+      }
+    }
+  });
+
+  if (!requestedDomain) {
+    return redirect("/");
   }
+
   return (
     <div>
-      <Header />
+      <Header currentDomain={requestedDomain} />
       {children}
       <Footer />
     </div>
