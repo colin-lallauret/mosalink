@@ -3,10 +3,45 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { signIn, useSession } from "next-auth/react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
+
+  // de ici
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+    const handleDevLogin = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    try {
+      const response = await fetch('/api/dev-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Recharger la page pour que NextAuth reconnaisse la nouvelle session
+        window.location.href = data.redirectUrl || '/';
+      } else {
+        console.error('Erreur de connexion dev:', data.error);
+        alert(`Erreur: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la connexion dev:', error);
+      alert('Erreur de connexion');
+    }
+  };
+  // jusqu'ici
 
   const isEmailValid = useMemo(() => {
     return /^[\w\.-]+@[\w\.-]+\.\w+$/.test(email);
@@ -32,6 +67,19 @@ const Login = () => {
       >
         Connection avec Email
       </Button>
+
+      {/* de ici */}
+      {isClient && (
+        <Button
+          disabled={!isEmailValid}
+          onClick={handleDevLogin}
+          variant="outline"
+          type="button"
+        >
+          🚀 Connexion Directe (Dev)
+        </Button>
+      )}
+      {/* jusqu'ici */}
     </form>
   );
 };
