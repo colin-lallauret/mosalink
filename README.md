@@ -14,3 +14,9 @@
 # Init database
 - cd C:\Users\colin\Desktop\Mosalink_dev
 - psql -U postgres -d mosalink -h localhost -f mosalink-24-01-2024.dump
+
+---
+
+## Auteur du README
+
+Colin LALLAURET
