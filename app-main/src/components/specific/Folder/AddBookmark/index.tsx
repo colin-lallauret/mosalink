@@ -32,7 +32,7 @@ const AddBookmarkInFolder = ({ bookmarkId, setOpenDialog }: Props) => {
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Ajouter à un groupe</DialogTitle>
+        <DialogTitle>Ajouter à un projet</DialogTitle>
       </DialogHeader>
       <DialogDescription>
         <div className="w-full flex flex-col gap-4 py-4">

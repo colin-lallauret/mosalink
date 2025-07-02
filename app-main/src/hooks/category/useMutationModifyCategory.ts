@@ -1,6 +1,5 @@
 import { useToast } from "@/components/ui/use-toast";
 import { routeIndexFront } from "@/utils/routes/routesFront";
-import { Bookmark, Category, Role } from "@prisma/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface QueryModifyCategory {
@@ -51,7 +50,7 @@ export function useMutationModifyCategory() {
         title: "Félicitations",
         description: "La Catégorie a bien été modifié.",
       });
-      queryClient.refetchQueries(["categoriesDomain"]);
+      queryClient.refetchQueries(["categoriesAdmin"]);
     },
   });
 

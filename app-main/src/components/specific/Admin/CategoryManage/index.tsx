@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMutationCreateCategory } from "@/hooks/category/useMutationCreateCategory";
-import { useQueryCategoriesDomain } from "@/hooks/useCategory";
+import { useQueryCategoriesAdmin } from "@/hooks/category/useQueryCategoriesAdmin";
 import { getNameToUrl } from "@/utils/url/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import CategoryItem from "./CategoryItem";
 
 const CategoryManage = () => {
-  const { data, isLoading, isError } = useQueryCategoriesDomain();
+  const { data, isLoading, isError } = useQueryCategoriesAdmin();
   const createCategoryMutation = useMutationCreateCategory();
   const [numberOfCategories, setNumberOfCategories] = useState(0);
   const [newCategorieName, setNewCategorieName] = useState("");

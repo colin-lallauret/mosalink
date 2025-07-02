@@ -40,7 +40,7 @@ export function useMutationDeleteCategory() {
         title: "Félicitations",
         description: "La Catégorie a bien été supprimé.",
       });
-      queryClient.refetchQueries(["categoriesDomain"]);
+      queryClient.refetchQueries(["categoriesAdmin"]);
     },
   });
 

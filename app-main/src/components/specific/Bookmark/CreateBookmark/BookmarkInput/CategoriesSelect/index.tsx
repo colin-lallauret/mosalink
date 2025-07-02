@@ -7,6 +7,8 @@ import {
 } from "@/components/ui/select";
 import { useQueryCategoriesDomain } from "@/hooks/useCategory";
 import { Dispatch, SetStateAction } from "react";
+import { useSession } from "next-auth/react";
+import { useParams } from "next/navigation";
 
 interface Props {
   setCategoryId: Dispatch<SetStateAction<string | undefined>>;
@@ -14,7 +16,12 @@ interface Props {
 }
 
 const CategoriesSelect = ({ setCategoryId, categoryId }: Props) => {
-  const { data } = useQueryCategoriesDomain();
+  const { data: session } = useSession();
+  const params = useParams();
+  
+  const domainUrl = (params?.domain as string) || session?.user?.domainUrl || '';
+  
+  const { data } = useQueryCategoriesDomain(domainUrl);
 
   return (
     <Select

@@ -72,7 +72,7 @@ const DropdownBookmarkCard = ({ bookmark, folderId }: Props) => {
           <DropdownMenuItem onClick={() => handleDeleteBookmarkToFolder()}>
             <div className="flex gap-2 items-center">
               <FolderX className="w-4 h-4" />
-              Supprimer du groupe
+              Supprimer du projet
             </div>
           </DropdownMenuItem>
         </>
@@ -94,7 +94,7 @@ const DropdownBookmarkCard = ({ bookmark, folderId }: Props) => {
             <DropdownMenuItem onClick={() => setContentDialog("folder")}>
               <div className="flex gap-2">
                 <Folder className="w-4 h-4" />
-                Ajouter à un groupe
+                Ajouter à un projet
               </div>
             </DropdownMenuItem>
           </DialogTrigger>
