@@ -45,6 +45,7 @@ const UserNav = () => {
                 </DropdownMenuItem>
               )}
             {session.data &&
+              !isSuperAdmin(session.data.user) &&
               isAdminDomain(session.data.user, session.data.user.domainId) && (
                 <DropdownMenuItem asChild>
                   <Link href={routeAdminFront(session.data.user.domainUrl)}>

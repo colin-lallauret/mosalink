@@ -10,6 +10,7 @@ import DomainCard from "@/components/specific/SuperAdmin/DomainCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Shield, RefreshCw, Plus } from "lucide-react";
+import UserNav from "@/components/specific/Header/UserNav";
 
 export default function SuperAdminPage() {
   const { data: session, status } = useSession();
@@ -47,17 +48,16 @@ export default function SuperAdminPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Shield className="h-8 w-8 text-blue-600" />
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-2xl font-bold text-gray-900">
                   Interface Super Administrateur
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-sm text-gray-600">
                   Gestion globale des domaines Mosalink
                 </p>
               </div>
@@ -73,13 +73,13 @@ export default function SuperAdminPage() {
                 Actualiser
               </Button>
               <CreateDomainDialog />
+              <UserNav />
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 py-8">
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, index) => (
@@ -141,7 +141,7 @@ export default function SuperAdminPage() {
             </div>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
