@@ -9,9 +9,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { isAdminDomain } from "@/utils/roles/utils";
+import { isAdminDomain, isSuperAdmin } from "@/utils/roles/utils";
 import { routeAdminFront } from "@/utils/routes/routesFront";
-import { LogOut, User, UserCog } from "lucide-react";
+import { LogOut, User, UserCog, Shield } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 
@@ -35,6 +35,15 @@ const UserNav = () => {
           </div>
           <div className="flex flex-col gap-1">
             <DropdownMenuSeparator />
+            {session.data &&
+              isSuperAdmin(session.data.user) && (
+                <DropdownMenuItem asChild>
+                  <Link href="/super-admin">
+                    <Shield className="mr-2 h-4 w-4" />
+                    <span>Super Admin</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
             {session.data &&
               isAdminDomain(session.data.user, session.data.user.domainId) && (
                 <DropdownMenuItem asChild>

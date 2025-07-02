@@ -2,6 +2,31 @@ import { Role } from "@prisma/client";
 import prisma from "../lib/prisma";
 
 async function main() {
+  const superAdminDomain = await prisma.domain.upsert({
+    where: { name: "super-admin" },
+    update: {},
+    create: {
+      name: "super-admin",
+      url: "super-admin",
+      isPublish: false,
+    },
+  });
+
+  const superAdmin = await prisma.user.upsert({
+    where: { email: "superadmin@mosalink.com" },
+    update: {},
+    create: {
+      email: "superadmin@mosalink.com",
+      name: "Super Administrateur",
+      role: Role.SUPER_ADMIN,
+      domain: {
+        connect: {
+          name: "super-admin",
+        },
+      },
+    },
+  });
+
   const domainTest = await prisma.domain.upsert({
     where: { name: "test" },
     update: {},
