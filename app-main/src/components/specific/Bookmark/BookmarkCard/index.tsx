@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   routeCategorieFront,
@@ -9,6 +8,7 @@ import {
   routeUserFront,
 } from "@/utils/routes/routesFront";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
 import { BookmarkData } from "@/hooks/bookmark/useQueryBookmarksUser";
 import DropdownBookmarkCard from "./DropdownBookmarkCard";
@@ -26,90 +26,135 @@ const BookmarkCard = ({ bookmark, folderId, isPublic }: Props) => {
   const session = useSession();
 
   const [imageError, setImageError] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+
+  const isDescriptionLong = bookmark.description.length > 120;
+
+  const handleCardClick = () => {
+    window.open(bookmark.url, '_blank');
+  };
+
+  const handleToggleDescription = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setIsDescriptionExpanded(!isDescriptionExpanded);
+  };
 
   return (
-    <Link href={bookmark.url} target="_blank">
-      <div className="group inline-flex flex-col p-4 gap-4 border rounded shadow w-[300px] max-h-[500px]">
-        <Image
-          onErrorCapture={() => setImageError(true)}
-          src={imageError ? defaultImageBookmark : bookmark.image ?? ""}
-          alt={bookmark.title}
-          width={250}
-          height={150}
-          unoptimized
-          className="w-full h-[150px] rounded object-cover"
-        />
-        <div className="flex justify-between items-center gap-2">
-          <p
-            className="font-bold text-lg
-           truncate w-[250px]
-           group-hover:underline"
-          >
-            {bookmark.title}
-          </p>
-          {!isPublic && (
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-              }}
-            >
-              <DropdownBookmarkCard bookmark={bookmark} folderId={folderId} />
-            </div>
-          )}
-        </div>
-        <p className="h-20 text-sm text-nowrap overflow-hidden text-ellipsis">
-          {bookmark.description}
-        </p>
-        <div>
-          <Badge
-            className="cursor-pointer"
+    <div 
+      className="group inline-flex flex-col p-4 gap-3 border rounded shadow w-[300px] min-h-[470px] hover:shadow-lg transition-all duration-300 cursor-pointer"
+      onClick={handleCardClick}
+    >
+      <Image
+        onErrorCapture={() => setImageError(true)}
+        src={imageError ? defaultImageBookmark : bookmark.image ?? ""}
+        alt={bookmark.title}
+        width={250}
+        height={150}
+        unoptimized
+        className="w-full h-[150px] rounded object-cover flex-shrink-0"
+      />
+      
+      <div className="flex justify-between items-start gap-2 flex-shrink-0">
+        <h3
+          className="font-bold text-lg leading-6 w-[220px] group-hover:underline"
+          style={{ 
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden'
+          }}
+        >
+          {bookmark.title}
+        </h3>
+        {!isPublic && (
+          <div
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              router.push(
-                routeCategorieFront(
-                  session.data?.user.domainName,
-                  bookmark.category.url
-                )
-              );
             }}
+            className="flex-shrink-0"
           >
-            {bookmark.category.name}
-          </Badge>
-        </div>
-
-        <div className="flex gap-2 flex-wrap">
-          {bookmark.tags?.map((tag) => (
-            <Badge
-              className="cursor-pointer"
-              variant={"outline"}
-              key={tag}
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                router.push(routeTagFront(session.data?.user.domainName, tag));
-              }}
+            <DropdownBookmarkCard bookmark={bookmark} folderId={folderId} />
+          </div>
+        )}
+      </div>
+      
+      <div className={`flex flex-col ${isDescriptionExpanded ? 'flex-auto' : 'flex-1'}`}>
+        <div className="text-sm text-gray-600 leading-5">
+          <p
+            className={`transition-all duration-300 ${!isDescriptionExpanded ? "line-clamp-3" : ""}`}
+            style={!isDescriptionExpanded ? { 
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden'
+            } : {}}
+          >
+            {bookmark.description}
+          </p>
+          
+          {isDescriptionLong && (
+            <Button
+              variant="link"
+              size="sm"
+              className="p-0 h-auto text-xs text-blue-600 hover:text-blue-800 mt-2 transition-colors"
+              onClick={handleToggleDescription}
             >
-              {tag}
-            </Badge>
-          ))}
+              {isDescriptionExpanded ? "Voir moins" : "Voir plus"}
+            </Button>
+          )}
         </div>
+      </div>
 
-        <p
-          className="text-right text-xs text-slate-500 w-fit cursor-pointer"
+      <div className="flex-shrink-0 mt-auto">
+        <Badge
+          className="cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
             router.push(
-              routeUserFront(session.data?.user.domainName, bookmark.user.id)
+              routeCategorieFront(
+                session.data?.user.domainName,
+                bookmark.category.url
+              )
             );
           }}
         >
-          {bookmark.user.email}
-        </p>
+          {bookmark.category.name}
+        </Badge>
       </div>
-    </Link>
+
+      <div className="flex gap-2 flex-wrap flex-shrink-0">
+        {bookmark.tags?.map((tag) => (
+          <Badge
+            className="cursor-pointer"
+            variant={"outline"}
+            key={tag}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              router.push(routeTagFront(session.data?.user.domainName, tag));
+            }}
+          >
+            {tag}
+          </Badge>
+        ))}
+      </div>
+
+      <p
+        className="text-right text-xs text-slate-500 w-fit cursor-pointer flex-shrink-0 ml-auto"
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          router.push(
+            routeUserFront(session.data?.user.domainName, bookmark.user.id)
+          );
+        }}
+      >
+        {bookmark.user.email}
+      </p>
+    </div>
   );
 };
 

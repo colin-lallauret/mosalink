@@ -45,7 +45,7 @@ const BookmarkBoard = ({ bookmarks, isLoading, folderId, isPublic }: Props) => {
   }
 
   return (
-    <div className="w-full grid gap-10 justify-items-center md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="w-full grid gap-6 justify-items-center md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-start">
       {bookmarks?.map((bookmark) => (
         <BookmarkCard
           key={bookmark.id}
