@@ -30,7 +30,6 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Recharger la page pour que NextAuth reconnaisse la nouvelle session
         window.location.href = data.redirectUrl || '/';
       } else {
         console.error('Erreur de connexion dev:', data.error);
@@ -59,9 +58,20 @@ const Login = () => {
       />
       <Button
         disabled={!isEmailValid}
-        onClick={(e) => {
+        onClick={async (e) => {
           e.preventDefault();
-          signIn("email", { email: email });
+          try {
+            const result = await signIn("email", { 
+              email: email,
+              redirect: false 
+            });
+            
+            if (result?.ok) {
+              window.location.href = "/auth/verify-request";
+            }
+          } catch (error) {
+            console.error("Erreur lors de la connexion:", error);
+          }
         }}
         type="submit"
       >

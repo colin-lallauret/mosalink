@@ -47,9 +47,6 @@ export default async function Home() {
         <h1 className="text-3xl font-bold mb-4">
           Bienvenue sur {process.env.NEXT_PUBLIC_APP_NAME}
         </h1>
-        <p className="text-gray-600">
-          Choisissez un domaine pour commencer
-        </p>
       </div>
 
       <div

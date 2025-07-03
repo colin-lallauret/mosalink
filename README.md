@@ -57,6 +57,8 @@ npx prisma generate
     - Utilisatation du mot "projet" (suppression du mot "groupe")
 - ⬜️ Interface utilisateur
   - Correction des problèmes d'UI
+    - ✅ Dropdown 'Catégories'
+    - ✅ Select2 pour 'Gestion des catégories' et 'Gestion des utilisateurs' dans '/admin'
   - Ajout de nouvelles fonctionnalités
 - ⬜️ Amélioration de la version mobile
 - ⬜️ Gestion du système d'authentification (supprimer le système de vérification par e-mail et utiliser un système de mot de passe)
@@ -69,6 +71,16 @@ npx prisma generate
 - ✅ Interface admin dans un domaine, ajout d'un nouvelle utilisateur qui est
 - ✅ Interface admin dans un domaine, affichage des catégories
 - ✅ Interface 'create bookmark', selection d'une catégorie
+
+### Changement pour la production
+- ✅ Création d'un repo GitHub
+- ⬜️ Utilisation de Vercel pour le serveur de production (gratuit)
+- ✅ Changement au niveau du serveur SMTP (envoie de mail), utilisation de Mailtrap (gratuit)
+    - Configuration de mailtrap (ajout d'un DNS)
+    - Utilisatation du "Transactional Stream" (https://mailtrap.io/sending/domains)
+        - Dans 'Sending Domains' puis Integration, puis Nodejs, utilisation de Nodemailer
+- ⬜️ Utilisation de supabase (gratuit) pour la base de donnée
+    - Changement au niveau du code pour adapter à supabase
 
 ---
 

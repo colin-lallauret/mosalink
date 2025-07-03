@@ -8,22 +8,43 @@ import sendTokenSessionMailContent from "@/services/mail/templates/sendTokenSess
 
 const prisma = new PrismaClient();
 
+async function sendVerificationRequest(params: any) {
+  const { identifier, url, provider } = params;
+  const { host } = new URL(url);
+  
+  const { text, html } = sendTokenSessionMailContent({ url, host });
+  const subject = `${process.env.NEXT_PUBLIC_APP_NAME} | Votre lien de connection`;
+  
+  try {
+    await sendMail({
+      provider,
+      identifier,
+      host,
+      subject,
+      text,
+      html,
+    });
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     EmailProvider({
-      server: process.env.EMAIL_SERVER,
+      server: {
+        host: process.env.MAILTRAP_HOST,
+        port: parseInt(process.env.MAILTRAP_PORT || "587"),
+        auth: {
+          user: process.env.MAILTRAP_USER,
+          pass: process.env.MAILTRAP_PASS
+        }
+      },
       from: process.env.EMAIL_FROM,
-      async sendVerificationRequest({
-        identifier: email,
-        url,
-        provider: { server, from },
-      }) {
-        await sendVerificationRequest({
-          identifier: email,
-          url,
-          provider: { server, from },
-        });
+      async sendVerificationRequest(params) {
+        await sendVerificationRequest(params);
       },
     }),
   ],
@@ -74,18 +95,3 @@ export const authOptions: NextAuthOptions = {
 const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
-
-async function sendVerificationRequest(params: any) {
-  const { identifier, url, provider } = params;
-  const { host } = new URL(url);
-  const { text, html } = sendTokenSessionMailContent({ url, host });
-  const subject = `${process.env.NEXT_PUBLIC_APP_NAME} | Votre lien de connection`;
-  await sendMail({
-    provider,
-    identifier,
-    host,
-    subject,
-    text,
-    html,
-  });
-}

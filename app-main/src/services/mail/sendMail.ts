@@ -18,7 +18,13 @@ export default async function sendMail({
   text,
   html,
 }: Params) {
-  const transport = createTransport(provider.server);
+  let transport;
+  
+  if (typeof provider.server === 'object') {
+    transport = createTransport(provider.server);
+  } else {
+    transport = createTransport(provider.server);
+  }
 
   await new Promise((resolve, reject) => {
     // verify connection configuration
@@ -27,7 +33,6 @@ export default async function sendMail({
         console.log(error);
         reject(error);
       } else {
-        console.log("Server is ready to take our messages");
         resolve(success);
       }
     });
@@ -48,7 +53,6 @@ export default async function sendMail({
           console.error(err);
           reject(err);
         } else {
-          console.log(info);
           resolve(info);
         }
       }
