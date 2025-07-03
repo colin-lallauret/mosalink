@@ -15,19 +15,18 @@
 
 - https://get.enterprisedb.com/postgresql/postgresql-16.9-2-windows-x64.exe
 
-# Init database
+# Init database (supabase)
 
-- Ce rendre dans pgAdmin et créer une bdd avec le nom "mosalink" qui a comme Owner l'utilisateur "postgres"
-- cd C:\Users\colin\Desktop\Mosalink_dev
-- psql -U postgres -d mosalink -h localhost -f mosalink-24-01-2024.dump
-
-# Appliquer mes modification de la base de données (Colin)
+- Depuis >Mosalink_dev/
+- Pour importer la base de donnée, exécuter : 
+```bash
+$env:PGPASSWORD="SUPABASE_PASSWORD"; psql -h SUPABASE_SERVER -p 5432 -U postgres.SUPABASE_PROJECT_ID -d postgres -f "mosalink-24-01-2024.dump"
+```
 
 - Ajout d'un domain "Super-admin"
 - Ajout d'un compte "Super-admin" à l'email "superadmin@mosalink.com"
-
 ```bash
-psql -U postgres -d mosalink -h localhost -f modification-bdd-colin.sql
+$env:PGPASSWORD="SUPABASE_PASSWORD"; psql -h SUPABASE_SERVER -p 5432 -U postgres.SUPABASE_PROJECT_ID -d postgres -f "modification-bdd-colin.sql"
 ```
 
 # A faire
