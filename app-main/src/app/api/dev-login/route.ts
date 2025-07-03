@@ -1,9 +1,8 @@
 // Ajout de dev-login, connexion pour l'environnement de dev
 
 import { NextResponse } from "next/server";
-import prisma from "../../../../lib/prisma";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { encode } from "next-auth/jwt";
+import { userQueries, sessionQueries } from "../../../../lib/supabase-queries";
 
 export async function POST(request: Request) {
   // Seulement en développement
@@ -19,10 +18,7 @@ export async function POST(request: Request) {
     }
 
     // Vérifier que l'utilisateur existe
-    const user = await prisma.user.findUnique({
-      where: { email },
-      include: { domain: true }
-    });
+    const user = await userQueries.findUnique({ email });
 
     if (!user) {
       return NextResponse.json({ error: "Utilisateur non trouvé" }, { status: 404 });
@@ -33,15 +29,12 @@ export async function POST(request: Request) {
     const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 jours
 
     // Créer la session dans la base de données
-    await prisma.session.create({
-      data: {
-        sessionToken,
-        userId: user.id,
-        expires,
-      },
+    await sessionQueries.create({
+      sessionToken,
+      userId: user.id,
+      expires: expires.toISOString(),
     });
 
-    // Créer un JWT token pour NextAuth
     const token = await encode({
       token: {
         sub: user.id,
@@ -52,7 +45,6 @@ export async function POST(request: Request) {
       secret: process.env.NEXTAUTH_SECRET!,
     });
 
-    // Retourner les cookies pour la session
     return NextResponse.json({ 
       success: true, 
       message: "Connexion réussie",

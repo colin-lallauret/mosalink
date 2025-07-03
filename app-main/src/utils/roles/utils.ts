@@ -1,8 +1,9 @@
-import { Role } from "@prisma/client";
 import { Session } from "next-auth";
 
+export type Role = 'USER' | 'MODERATOR' | 'ADMIN' | 'SUPER_ADMIN';
+
 export function isSuperAdmin(user: { role: Role }) {
-  if (user.role === Role.SUPER_ADMIN) {
+  if (user.role === 'SUPER_ADMIN') {
     return true;
   }
   return false;
@@ -15,7 +16,7 @@ export function isAdminDomain(
   if (isSuperAdmin(user)) {
     return true;
   }
-  if (user.role === Role.ADMIN && user.domainId === domainId) {
+  if (user.role === 'ADMIN' && user.domainId === domainId) {
     return true;
   }
   return false;

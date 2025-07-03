@@ -1,12 +1,10 @@
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { PrismaClient } from "@prisma/client";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import EmailProvider from "next-auth/providers/email";
 import { createTransport } from "nodemailer";
 import sendMail from "@/services/mail/sendMail";
 import sendTokenSessionMailContent from "@/services/mail/templates/sendTokenSession";
-
-const prisma = new PrismaClient();
+import { SupabaseAdapter } from "../../../../../lib/supabase-adapter";
+import { supabaseAdmin } from "../../../../../lib/supabase";
 
 async function sendVerificationRequest(params: any) {
   const { identifier, url, provider } = params;
@@ -31,7 +29,7 @@ async function sendVerificationRequest(params: any) {
 }
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter: SupabaseAdapter(supabaseAdmin),
   providers: [
     EmailProvider({
       server: {
@@ -55,39 +53,55 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account, email }) {
-      const userExists = await prisma.user.findUnique({
-        where: { email: user.email ?? "" }, //the user object has an email property, which contains the email the user entered.
-      });
-      if (userExists) {
-        return true; //if the email exists in the User collection, email them a magic login link
-      } else {
+      try {
+        const { data: userExists } = await supabaseAdmin
+          .from("User")
+          .select("email, domainId")
+          .eq("email", user.email ?? "")
+          .single();
+        
+        if (userExists) {
+          return true;
+        } else {
+          return true;
+        }
+      } catch (error) {
+        console.error("Erreur lors de la vérification de l'utilisateur:", error);
         return true;
       }
     },
     async session({ session, user }) {
-      if (session?.user) {
-        const userData = await prisma.user.findUnique({
-          where: { email: user.email },
-          select: { id: true, domainId: true, role: true },
-        });
+      if (session?.user && user?.email) {
+        try {
+          const { data: userData } = await supabaseAdmin
+            .from("User")
+            .select("id, domainId, role")
+            .eq("email", user.email)
+            .single();
 
-        const domain = await prisma.domain.findUnique({
-          where: { id: userData?.domainId },
-          select: {
-            id: true,
-            name: true,
-            url: true,
-          },
-        });
-        session.user.domainId = userData?.domainId;
-        session.user.domainName = domain?.name;
-        session.user.domainUrl = domain?.url;
-        session.user.id = userData?.id;
-        session.user.role = userData?.role;
+          if (userData) {
+            const { data: domain } = await supabaseAdmin
+              .from("Domain")
+              .select("id, name, url")
+              .eq("id", userData.domainId)
+              .single();
+
+            session.user.domainId = userData.domainId;
+            session.user.domainName = domain?.name;
+            session.user.domainUrl = domain?.url;
+            session.user.id = userData.id;
+            session.user.role = userData.role;
+          }
+        } catch (error) {
+          console.error("Erreur lors de la récupération des données utilisateur:", error);
+        }
       }
 
       return session;
     },
+  },
+  session: {
+    strategy: "database",
   },
   secret: process.env.NEXTAUTH_SECRET,
 };

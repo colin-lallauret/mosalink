@@ -1,51 +1,64 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import prisma from "../../../../lib/prisma";
 import { authOptions } from "../auth/[...nextauth]/route";
-import { Role } from "@prisma/client";
-import { isAdminDomain } from "@/utils/roles/utils";
+import { Role, isAdminDomain } from "@/utils/roles/utils";
+import { userQueries } from "../../../../lib/supabase-queries";
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
+  try {
+    const session = await getServerSession(authOptions);
 
-  if (!session || !isAdminDomain(session.user, session.user.domainId)) {
-    return NextResponse.json({
-      message: "Vous n'avez pas accès à cette page",
-      status: 403,
-    });
-  }
+    if (!session || !isAdminDomain(session.user, session.user.domainId)) {
+      return NextResponse.json({
+        message: "Vous n'avez pas accès à cette page",
+        status: 403,
+      });
+    }
 
-  const data = await req.json();
+    const data = await req.json();
 
-  if (!data.email && !data.role) {
-    return NextResponse.json({
-      message: "Veillez remplir tous les champs",
-      status: 403,
-    });
-  }
+    if (!data.email || !data.role) {
+      return NextResponse.json({
+        message: "Veillez remplir tous les champs",
+        status: 403,
+      });
+    }
 
-  const newUser = await prisma.user.create({
-    data: {
+    const newUser = await userQueries.create({
       email: data.email,
-      role: data.role ?? Role.USER,
-      domain: {
-        connect: {
-          id: session.user.domainId,
-        },
-      },
+      role: data.role ?? "USER",
+      domainId: session.user.domainId,
       image: data.image,
-    },
-  });
+    });
 
-  return NextResponse.json(newUser);
+    return NextResponse.json(newUser);
+  } catch (error) {
+    console.error("Erreur lors de la création de l'utilisateur:", error);
+    return NextResponse.json(
+      { error: "Erreur interne du serveur" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  try {
+    const session = await getServerSession(authOptions);
 
-  const users = await prisma.user.findMany({
-    where: { domainId: session?.user?.domainId ?? undefined },
-  });
+    if (!session?.user?.domainId) {
+      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    }
 
-  return NextResponse.json(users ?? []);
+    const users = await userQueries.findMany({
+      domainId: session.user.domainId,
+    });
+
+    return NextResponse.json(users);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des utilisateurs:", error);
+    return NextResponse.json(
+      { error: "Erreur interne du serveur" },
+      { status: 500 }
+    );
+  }
 }
