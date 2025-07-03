@@ -18,13 +18,15 @@
 # Init database (supabase)
 
 - Depuis >Mosalink_dev/
-- Pour importer la base de donnée, exécuter : 
+- Pour importer la base de donnée, exécuter :
+
 ```bash
 $env:PGPASSWORD="SUPABASE_PASSWORD"; psql -h SUPABASE_SERVER -p 5432 -U postgres.SUPABASE_PROJECT_ID -d postgres -f "mosalink-24-01-2024.dump"
 ```
 
 - Ajout d'un domain "Super-admin"
 - Ajout d'un compte "Super-admin" à l'email "superadmin@mosalink.com"
+
 ```bash
 $env:PGPASSWORD="SUPABASE_PASSWORD"; psql -h SUPABASE_SERVER -p 5432 -U postgres.SUPABASE_PROJECT_ID -d postgres -f "modification-bdd-colin.sql"
 ```
@@ -72,14 +74,19 @@ npx prisma generate
 - ✅ Interface 'create bookmark', selection d'une catégorie
 
 ### Changement pour la production
+
 - ✅ Création d'un repo GitHub
 - ⬜️ Utilisation de Vercel pour le serveur de production (gratuit)
+  - ⬜️ npm build en prod
+  - ⬜️ Changer les variables du .env directement sur Vercel
 - ✅ Changement au niveau du serveur SMTP (envoie de mail), utilisation de Mailtrap (gratuit)
-    - Configuration de mailtrap (ajout d'un DNS)
-    - Utilisatation du "Transactional Stream" (https://mailtrap.io/sending/domains)
-        - Dans 'Sending Domains' puis Integration, puis Nodejs, utilisation de Nodemailer
-- ⬜️ Utilisation de supabase (gratuit) pour la base de donnée
-    - Changement au niveau du code pour adapter à supabase
+  - Configuration de mailtrap (ajout d'un DNS)
+  - Utilisatation du "Transactional Stream" (https://mailtrap.io/sending/domains)
+    - Dans 'Sending Domains' puis Integration, puis Nodejs, utilisation de Nodemailer
+- ✅ Utilisation de supabase (gratuit) pour la base de donnée
+  - ✅ Création d'un compte
+  - ✅ Migration vers supabase
+  - ✅ Changement au niveau du code pour adapter à supabase
 
 ---
 
