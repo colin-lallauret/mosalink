@@ -24,7 +24,7 @@ export default async function Layout({ children, params }: Props) {
 
   const { data: requestedDomain, error } = await supabaseAdmin
     .from('Domain')
-    .select('id, name, url, isPublish')
+    .select('id, name, url, isPublish, maximumCategories, creationDate, lastUpdateDate')
     .eq('url', params.domain)
     .eq('isPublish', true)
     .single();

@@ -18,7 +18,7 @@ export default async function sendMail({
   text,
   html,
 }: Params) {
-  let transport;
+  let transport: any;
   
   if (typeof provider.server === 'object') {
     transport = createTransport(provider.server);
@@ -28,7 +28,7 @@ export default async function sendMail({
 
   await new Promise((resolve, reject) => {
     // verify connection configuration
-    transport.verify(function (error, success) {
+    transport.verify(function (error: any, success: any) {
       if (error) {
         console.log(error);
         reject(error);
@@ -48,7 +48,7 @@ export default async function sendMail({
         text,
         html,
       },
-      (err, info) => {
+      (err: any, info: any) => {
         if (err) {
           console.error(err);
           reject(err);
