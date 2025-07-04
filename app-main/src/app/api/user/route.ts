@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { Role, isAdminDomain } from "@/utils/roles/utils";
 import { userQueries } from "../../../../lib/supabase-queries";
+import { createId } from "@paralleldrive/cuid2";
 
 export async function POST(req: Request) {
   try {
@@ -25,10 +26,13 @@ export async function POST(req: Request) {
     }
 
     const newUser = await userQueries.create({
+      id: createId(),
       email: data.email,
       role: data.role ?? "USER",
       domainId: session.user.domainId,
       image: data.image,
+      creationDate: new Date().toISOString(),
+      lastUpdateDate: new Date().toISOString(),
     });
 
     return NextResponse.json(newUser);

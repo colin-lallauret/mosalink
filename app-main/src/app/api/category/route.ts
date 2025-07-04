@@ -3,6 +3,7 @@ import { authOptions } from "../auth/[...nextauth]/route";
 import { NextResponse } from "next/server";
 import { isAdminDomain } from "@/utils/roles/utils";
 import { categoryQueries } from "../../../../lib/supabase-queries";
+import { createId } from "@paralleldrive/cuid2";
 
 export async function GET() {
   try {
@@ -44,9 +45,12 @@ export async function POST(req: Request) {
     }
 
     const newCategory = await categoryQueries.create({
+      id: createId(),
       name: data.name,
       url: data.url,
       domainId: session.user.domainId,
+      creationDate: new Date().toISOString(),
+      lastUpdateDate: new Date().toISOString(),
     });
 
     return NextResponse.json(newCategory);

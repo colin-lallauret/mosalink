@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback } from "react";
-import { useMutationCreateUser } from "@/hooks/user/useMutationCreateUser";
-import { useMutationDeleteUser } from "@/hooks/user/useMutationDeleteUser";
-import { useMutationModifyUser } from "@/hooks/user/useMutationModifyUser";
+import { useMutationCreateUserSupabase } from "@/hooks/user/useMutationCreateUserSupabase";
+import { useMutationDeleteUserSupabase } from "@/hooks/user/useMutationDeleteUserSupabase";
+import { useMutationModifyUserSupabase } from "@/hooks/user/useMutationModifyUserSupabase";
 import { useQueryUsersDomain } from "@/hooks/user/useQueryUsersDomain";
 import { UserSelect2 } from "@/components/ui/user-select2";
 
@@ -21,9 +21,9 @@ interface User {
 }
 
 const UserManageV2 = () => {
-  const createUserMutation = useMutationCreateUser();
-  const deleteUserMutation = useMutationDeleteUser();
-  const modifyUserMutation = useMutationModifyUser();
+  const createUserMutation = useMutationCreateUserSupabase();
+  const deleteUserMutation = useMutationDeleteUserSupabase();
+  const modifyUserMutation = useMutationModifyUserSupabase();
   const { data: users = [], isLoading } = useQueryUsersDomain();
 
   const handleCreateUser = useCallback(

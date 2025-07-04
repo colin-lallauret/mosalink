@@ -1,18 +1,18 @@
 "use client";
 
 import { useCallback } from "react";
-import { useMutationCreateCategory } from "@/hooks/category/useMutationCreateCategory";
-import { useMutationDeleteCategory } from "@/hooks/category/useMutationDeleteCategory";
-import { useMutationModifyCategory } from "@/hooks/category/useMutationModifyCategory";
+import { useMutationCreateCategorySupabase } from "@/hooks/category/useMutationCreateCategorySupabase";
+import { useMutationDeleteCategorySupabase } from "@/hooks/category/useMutationDeleteCategorySupabase";
+import { useMutationModifyCategorySupabase } from "@/hooks/category/useMutationModifyCategorySupabase";
 import { useQueryCategoriesAdmin } from "@/hooks/category/useQueryCategoriesAdmin";
 import { getNameToUrl } from "@/utils/url/utils";
 import CategorySelect2 from "@/components/ui/category-select2";
 
 const CategoryManageV2 = () => {
   const { data: categories = [], isLoading, isError } = useQueryCategoriesAdmin();
-  const createCategoryMutation = useMutationCreateCategory();
-  const modifyCategoryMutation = useMutationModifyCategory();
-  const deleteCategoryMutation = useMutationDeleteCategory();
+  const createCategoryMutation = useMutationCreateCategorySupabase();
+  const modifyCategoryMutation = useMutationModifyCategorySupabase();
+  const deleteCategoryMutation = useMutationDeleteCategorySupabase();
 
   const handleCreateCategory = useCallback(
     (name: string) => {

@@ -80,6 +80,7 @@ export async function PUT(
       .update({
         email: data.email,
         role: data.role,
+        lastUpdateDate: new Date().toISOString(),
       })
       .eq('id', params.id)
       .select()
