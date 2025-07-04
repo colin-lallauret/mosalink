@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { bookmarkQueries } from "../../../../lib/supabase-queries";
+import { createId } from "@paralleldrive/cuid2";
 
 export async function POST(req: Request) {
   try {
@@ -24,6 +25,7 @@ export async function POST(req: Request) {
     }
 
     const bookmark = await bookmarkQueries.create({
+      id: createId(),
       title: data.title,
       url: data.url,
       description: data.description,
@@ -32,6 +34,8 @@ export async function POST(req: Request) {
       categoryId: data.categoryId,
       domainId: session.user.domainId,
       image: data.image,
+      creationDate: new Date().toISOString(),
+      lastUpdateDate: new Date().toISOString(),
     });
 
     return NextResponse.json(bookmark);

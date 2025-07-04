@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import CategoriesSelect from "./CategoriesSelect";
 import TagsInput from "./TagsInput";
-import { useMutationCreateBookmark } from "@/hooks/useBookmark";
+import { useMutationCreateBookmarkSupabase } from "@/hooks/bookmark/useMutationCreateBookmarkSupabase";
 
 interface Props {
   url: string;
@@ -32,7 +32,7 @@ const BookmarkInput = ({ url, setUrl }: Props) => {
   const [tags, setTags] = useState<string[]>([]);
   const [categoryMessage, setCategoryMessage] = useState<string | null>(null);
 
-  const mutation = useMutationCreateBookmark();
+  const mutation = useMutationCreateBookmarkSupabase();
 
   const router = useRouter();
   const session = useSession();

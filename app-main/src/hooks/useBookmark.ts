@@ -19,6 +19,9 @@ interface QueryUpdateBookmark extends QueryPostBookmark {
 const postBookmark = async (bookmark: QueryPostBookmark) => {
   const response = await fetch(routeIndexFront + "/api/bookmark", {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({
       title: bookmark.title,
       url: bookmark.url,
@@ -28,6 +31,12 @@ const postBookmark = async (bookmark: QueryPostBookmark) => {
       categoryId: bookmark.categoryId,
     }),
   });
+
+  if (!response.ok) {
+    throw new Error('Erreur lors de la création du bookmark');
+  }
+
+  return response.json();
 };
 
 const updateBookmark = async (bookmark: QueryUpdateBookmark) => {
