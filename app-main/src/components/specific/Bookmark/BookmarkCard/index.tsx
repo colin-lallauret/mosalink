@@ -10,7 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
-import { BookmarkData } from "@/hooks/bookmark/useQueryBookmarksUser";
+import { BookmarkData } from "@/hooks/bookmark/useQueryBookmarksUserSupabase";
 import DropdownBookmarkCard from "./DropdownBookmarkCard";
 import { defaultImageBookmark } from "../../../../../constants";
 import { useState } from "react";

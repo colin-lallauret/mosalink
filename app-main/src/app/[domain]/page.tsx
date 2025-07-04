@@ -9,7 +9,7 @@ interface Props {
 const Page = async ({ params }: Props) => {
   const session = await getServerSession(authOptions);
 
-  return <DomainBoard id={session?.user.id} domain={params.domain} />;
+  return <DomainBoard id={session?.user.id || ""} domain={params.domain} />;
 };
 
 export default Page;

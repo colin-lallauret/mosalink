@@ -11,10 +11,17 @@ const AddFolder = () => {
 
   const handleCreateFolder = useCallback(
     (e: any) => {
+      if (!newFolderName.trim()) {
+        e.preventDefault();
+        return;
+      }
+      
       createFolderMutation.mutate({
         name: newFolderName,
         url: getNameToUrl(newFolderName),
       });
+      
+      setNewFolderName(""); // Vider le champ après la soumission
       e.preventDefault();
     },
     [createFolderMutation, newFolderName]
@@ -30,6 +37,7 @@ const AddFolder = () => {
           type="text"
           placeholder="Nouveau projet"
           required
+          value={newFolderName}
           onChange={(e) => setNewFolderName(e.target.value)}
         />
         <Button type="submit" className="w-80" onClick={handleCreateFolder}>

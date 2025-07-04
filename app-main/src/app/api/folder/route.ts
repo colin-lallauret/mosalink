@@ -1,7 +1,8 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
-import supabase from "../../../../lib/supabase";
+import { supabase } from "../../../../lib/supabase";
 import { NextResponse } from "next/server";
+import { createId } from "@paralleldrive/cuid2";
 export async function GET() {
   const session = await getServerSession(authOptions);
 
@@ -83,9 +84,13 @@ export async function POST(req: Request) {
   }
 
   try {
+    const newId = createId();
+    console.log("ID généré pour le nouveau projet:", newId);
+    
     const { data: newFolder, error } = await supabase
       .from('Folder')
       .insert({
+        id: newId,
         name: data.name,
         url: url,
         userCreatorId: session.user.id,

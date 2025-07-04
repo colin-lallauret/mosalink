@@ -2,7 +2,7 @@
 
 import FolderBoard from "@/components/specific/Board/FolderBoard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useQueryBookmarksFolder } from "@/hooks/bookmark/useQueryBookmarksFolder";
+import { useQueryBookmarksFolderSupabase } from "@/hooks/bookmark/useQueryBookmarksFolderSupabase";
 import { routeIndexFront } from "@/utils/routes/routesFront";
 import { redirect } from "next/navigation";
 
@@ -13,7 +13,7 @@ interface Props {
 }
 
 const Page = ({ params }: Props) => {
-  const { data: folder, isLoading } = useQueryBookmarksFolder(params.projetId);
+  const { data: folder, isLoading } = useQueryBookmarksFolderSupabase(params.projetId);
 
   if (isLoading) {
     return <Skeleton className="w-full h-full" />;

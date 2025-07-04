@@ -10,7 +10,7 @@ import TagsInput from "../CreateBookmark/BookmarkInput/TagsInput";
 import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useMutationUpdateBookmarkSupabase } from "@/hooks/bookmark/useMutationUpdateBookmarkSupabase";
-import { BookmarkData } from "@/hooks/bookmark/useQueryBookmarksUser";
+import { BookmarkData } from "@/hooks/bookmark/useQueryBookmarksUserSupabase";
 
 interface Props {
   bookmark: BookmarkData;

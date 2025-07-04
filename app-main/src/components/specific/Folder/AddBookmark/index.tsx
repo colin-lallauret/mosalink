@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useMutationAddBookmarkToFolder } from "@/hooks/folder/useMutationAddBookmarkToFolder";
+import { useMutationAddBookmarkToFolderSupabase } from "@/hooks/folder/useMutationAddBookmarkToFolderSupabase";
 import { useQueryFoldersUser } from "@/hooks/folder/useQueryFoldersUser";
 import { Folder } from "lucide-react";
 import { Dispatch, SetStateAction, useCallback } from "react";
@@ -16,7 +16,7 @@ interface Props {
 
 const AddBookmarkInFolder = ({ bookmarkId, setOpenDialog }: Props) => {
   const { data } = useQueryFoldersUser();
-  const addBookmarkToFolderMutation = useMutationAddBookmarkToFolder();
+  const addBookmarkToFolderMutation = useMutationAddBookmarkToFolderSupabase();
 
   const handleAddBookmarkToFolder = useCallback(
     (folderId: string) => {
@@ -37,11 +37,6 @@ const AddBookmarkInFolder = ({ bookmarkId, setOpenDialog }: Props) => {
       <DialogDescription>
         <div className="w-full flex flex-col gap-4 py-4">
           {data?.map((folder) => {
-            if (
-              folder.bookmarks.find((bookmark) => bookmark.id === bookmarkId)
-            ) {
-              return null;
-            }
             return (
               <Button
                 variant={"secondary"}
@@ -54,6 +49,11 @@ const AddBookmarkInFolder = ({ bookmarkId, setOpenDialog }: Props) => {
               </Button>
             );
           })}
+          {(!data || data.length === 0) && (
+            <p className="text-center text-gray-500">
+              Aucun projet disponible. Créez d&apos;abord un projet pour pouvoir y ajouter des bookmarks.
+            </p>
+          )}
         </div>
       </DialogDescription>
     </>

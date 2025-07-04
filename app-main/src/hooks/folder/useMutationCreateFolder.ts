@@ -10,11 +10,21 @@ interface QueryCreateFolder {
 const createFolder = async (folder: QueryCreateFolder) => {
   const response = await fetch(routeIndexFront + "/api/folder", {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({
       name: folder.name,
       url: folder.url,
     }),
   });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Erreur lors de la création du projet");
+  }
+
+  return response.json();
 };
 
 export function useMutationCreateFolder() {
@@ -24,20 +34,26 @@ export function useMutationCreateFolder() {
   const createFolderMutation = async (folder: QueryCreateFolder) => {
     try {
       const response = await createFolder(folder);
-      return;
+      return response;
     } catch (error) {
-      throw new Error(
-        "Une erreur est survenue lors de la création du dossier."
-      );
+      throw error;
     }
   };
 
-  const mutation = useMutation(createFolderMutation, {
+  const mutation = useMutation({
+    mutationFn: createFolderMutation,
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: error.message || "Une erreur est survenue lors de la création du projet.",
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(["foldersUser"]);
       toast({
         title: "Félicitations",
-        description: "Le dossier a bien été créé.",
+        description: "Le projet a bien été créé.",
       });
     },
   });

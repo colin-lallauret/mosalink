@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { BookmarkData } from "@/hooks/bookmark/useQueryBookmarksUser";
+import { BookmarkData } from "@/hooks/bookmark/useQueryBookmarksUserSupabase";
 import {
   Copy,
   Folder,
@@ -68,19 +68,6 @@ const DropdownBookmarkCard = ({ bookmark, folderId }: Props) => {
       return null;
     }
 
-    if (folderId) {
-      return (
-        <>
-          <DropdownMenuItem onClick={() => handleDeleteBookmarkToFolder()}>
-            <div className="flex gap-2 items-center">
-              <FolderX className="w-4 h-4" />
-              Supprimer du projet
-            </div>
-          </DropdownMenuItem>
-        </>
-      );
-    }
-
     return (
       <>
         <DialogTrigger asChild>
@@ -91,15 +78,21 @@ const DropdownBookmarkCard = ({ bookmark, folderId }: Props) => {
             </div>
           </DropdownMenuItem>
         </DialogTrigger>
-        {folderData && folderData.length > 0 && (
-          <DialogTrigger asChild>
-            <DropdownMenuItem onClick={() => setContentDialog("folder")}>
-              <div className="flex gap-2">
-                <Folder className="w-4 h-4" />
-                Ajouter à un projet
-              </div>
-            </DropdownMenuItem>
-          </DialogTrigger>
+        <DialogTrigger asChild>
+          <DropdownMenuItem onClick={() => setContentDialog("folder")}>
+            <div className="flex gap-2">
+              <Folder className="w-4 h-4" />
+              Ajouter à un projet
+            </div>
+          </DropdownMenuItem>
+        </DialogTrigger>
+        {folderId && (
+          <DropdownMenuItem onClick={() => handleDeleteBookmarkToFolder()}>
+            <div className="flex gap-2 items-center">
+              <FolderX className="w-4 h-4" />
+              Supprimer du projet
+            </div>
+          </DropdownMenuItem>
         )}
         <DropdownMenuItem
           onClick={(e) => {
@@ -123,7 +116,6 @@ const DropdownBookmarkCard = ({ bookmark, folderId }: Props) => {
     bookmark.user.id,
     bookmark.id,
     folderId,
-    folderData,
     handleDeleteBookmarkToFolder,
     deleteBookmarkMutation,
   ]);

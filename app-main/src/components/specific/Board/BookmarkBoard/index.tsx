@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import BookmarkCard from "../../Bookmark/BookmarkCard";
-import { BookmarkData } from "@/hooks/bookmark/useQueryBookmarksUser";
+import { BookmarkData } from "@/hooks/bookmark/useQueryBookmarksUserSupabase";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { routeCreateBookmarkFront } from "@/utils/routes/routesFront";

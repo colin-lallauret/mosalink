@@ -1,6 +1,6 @@
 "use client";
 
-import { useQueryBookmarksFolder } from "@/hooks/bookmark/useQueryBookmarksFolder";
+import { useQueryBookmarksFolderSupabase } from "@/hooks/bookmark/useQueryBookmarksFolderSupabase";
 import Board from "..";
 import BookmarkBoard from "../BookmarkBoard";
 import TitleBoard from "../TitleBoard";
@@ -8,7 +8,7 @@ import SubtitleBoard from "../SubtitleBoard";
 import { Switch } from "@/components/ui/switch";
 import { useCallback, useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
-import { useMutationChangePublicFolder } from "@/hooks/folder/useMutationChangePublicFolder";
+import { useMutationChangePublicFolderSupabase } from "@/hooks/folder/useMutationChangePublicFolderSupabase";
 import Link from "next/link";
 import {
   routeFolderFront,
@@ -22,17 +22,25 @@ interface Props {
 }
 
 const FolderBoard = ({ id, isFolderPublic }: Props) => {
-  const { data: folder, isLoading, isError } = useQueryBookmarksFolder(id);
-  const mutationChangePublicFolder = useMutationChangePublicFolder();
+  const { data: folder, isLoading, isError } = useQueryBookmarksFolderSupabase(id);
+  const mutationChangePublicFolder = useMutationChangePublicFolderSupabase();
 
-  const [isPublic, setIsPublic] = useState(folder?.isPublish);
+  const [isPublic, setIsPublic] = useState(false);
+
+  // Mettre à jour le state local quand les données du folder changent
+  useEffect(() => {
+    if (folder?.isPublish !== undefined) {
+      setIsPublic(folder.isPublish);
+    }
+  }, [folder?.isPublish]);
 
   const handleChangePublicFolder = useCallback(() => {
+    const newPublicState = !isPublic;
     mutationChangePublicFolder.mutate({
       id,
-      isPubish: !isPublic,
+      isPubish: newPublicState,
     });
-    setIsPublic(!isPublic);
+    setIsPublic(newPublicState);
   }, [id, isPublic, mutationChangePublicFolder]);
 
   if (isError) {

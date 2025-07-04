@@ -5,7 +5,17 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 const deleteFolder = async (folderId: string) => {
   const response = await fetch(routeIndexFront + `/api/folder/${folderId}`, {
     method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Erreur lors de la suppression du projet");
+  }
+
+  return response.json();
 };
 
 export function useMutationDeleteFolder() {
@@ -15,27 +25,25 @@ export function useMutationDeleteFolder() {
   const deleteFolderMutation = async (folderId: string) => {
     try {
       const response = await deleteFolder(folderId);
-      return;
+      return response;
     } catch (error) {
-      throw new Error(
-        "Une erreur est survenue lors de la suppression du groupe."
-      );
+      throw error;
     }
   };
 
-  const mutation = useMutation(deleteFolderMutation, {
-    onError: () => {
+  const mutation = useMutation({
+    mutationFn: deleteFolderMutation,
+    onError: (error: Error) => {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description:
-          "Une erreur est survenue lors de la suppression du groupe.",
+        description: error.message || "Une erreur est survenue lors de la suppression du projet.",
       });
     },
     onSuccess: () => {
       toast({
         title: "Félicitations",
-        description: "Le groupe a bien été supprimé.",
+        description: "Le projet a bien été supprimé.",
       });
       queryClient.refetchQueries(["foldersUser"]);
     },
