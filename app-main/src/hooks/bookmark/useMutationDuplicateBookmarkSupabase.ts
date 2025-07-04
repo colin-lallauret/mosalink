@@ -2,7 +2,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { routeIndexFront } from "@/utils/routes/routesFront";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-const duplicateBookmark = async (bookmarkId: string) => {
+const duplicateBookmarkSupabase = async (bookmarkId: string) => {
   const response = await fetch(routeIndexFront + "/api/bookmark/duplicate-supabase", {
     method: "POST",
     headers: {
@@ -21,27 +21,25 @@ const duplicateBookmark = async (bookmarkId: string) => {
   return response.json();
 };
 
-export function useMutationDuplicateBookmark() {
+export function useMutationDuplicateBookmarkSupabase() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const createDuplicateBookmarkMutation = async (bookmarkId: string) => {
     try {
-      const response = await duplicateBookmark(bookmarkId);
-      return;
+      const response = await duplicateBookmarkSupabase(bookmarkId);
+      return response;
     } catch (error) {
-      throw new Error(
-        "Une erreur est survenue lors de la duplication du bookmark."
-      );
+      throw error;
     }
   };
+
   const mutation = useMutation(createDuplicateBookmarkMutation, {
-    onError: () => {
+    onError: (error: Error) => {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description:
-          "Une erreur est survenue lors de la duplication du bookmark.",
+        description: error.message || "Une erreur est survenue lors de la duplication du bookmark.",
       });
     },
     onSuccess: () => {

@@ -22,7 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useMutationDuplicateBookmark } from "@/hooks/bookmark/useMutationDuplicateBookmark";
+import { useMutationDuplicateBookmarkSupabase } from "@/hooks/bookmark/useMutationDuplicateBookmarkSupabase";
 import AddBookmarkInFolder from "@/components/specific/Folder/AddBookmark";
 import { useMutationDeleteBookmarkToFolder } from "@/hooks/folder/useMutationDeleteBookmarkToFolder";
 
@@ -33,7 +33,7 @@ interface Props {
 
 const DropdownBookmarkCard = ({ bookmark, folderId }: Props) => {
   const deleteBookmarkMutation = useMutationDeleteBookmark();
-  const duplicateBookmarkMutation = useMutationDuplicateBookmark();
+  const duplicateBookmarkMutation = useMutationDuplicateBookmarkSupabase();
   const deleteBookmarkToFolderMutation = useMutationDeleteBookmarkToFolder();
   const { data: folderData, isLoading, isError } = useQueryFoldersUser();
   const session = useSession();
