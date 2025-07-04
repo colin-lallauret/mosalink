@@ -10,7 +10,6 @@ import {
   Trash2,
 } from "lucide-react";
 import BookmarkModif from "../../BookmarkModif";
-import { useMutationDeleteBookmark } from "@/hooks/useBookmark";
 import { useQueryFoldersUser } from "@/hooks/folder/useQueryFoldersUser";
 import { canModifBookmark } from "@/utils/roles/utils";
 import { useSession } from "next-auth/react";
@@ -23,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useMutationDuplicateBookmarkSupabase } from "@/hooks/bookmark/useMutationDuplicateBookmarkSupabase";
+import { useMutationDeleteBookmarkSupabase } from "@/hooks/bookmark/useMutationDeleteBookmarkSupabase";
 import AddBookmarkInFolder from "@/components/specific/Folder/AddBookmark";
 import { useMutationDeleteBookmarkToFolder } from "@/hooks/folder/useMutationDeleteBookmarkToFolder";
 
@@ -32,7 +32,7 @@ interface Props {
 }
 
 const DropdownBookmarkCard = ({ bookmark, folderId }: Props) => {
-  const deleteBookmarkMutation = useMutationDeleteBookmark();
+  const deleteBookmarkMutation = useMutationDeleteBookmarkSupabase();
   const duplicateBookmarkMutation = useMutationDuplicateBookmarkSupabase();
   const deleteBookmarkToFolderMutation = useMutationDeleteBookmarkToFolder();
   const { data: folderData, isLoading, isError } = useQueryFoldersUser();
@@ -54,6 +54,8 @@ const DropdownBookmarkCard = ({ bookmark, folderId }: Props) => {
 
   const userModifContent = useMemo(() => {
     if (
+      !session?.data?.user?.id ||
+      !session?.data?.user?.domainId ||
       !canModifBookmark(
         {
           role: session?.data?.user.role,

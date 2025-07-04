@@ -2,32 +2,29 @@ import { useToast } from "@/components/ui/use-toast";
 import { routeIndexFront } from "@/utils/routes/routesFront";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-const duplicateBookmarkSupabase = async (bookmarkId: string) => {
-  const response = await fetch(routeIndexFront + "/api/bookmark/duplicate-supabase", {
-    method: "POST",
+const deleteBookmarkSupabase = async (bookmarkId: string) => {
+  const response = await fetch(routeIndexFront + `/api/bookmark/delete-supabase/${bookmarkId}`, {
+    method: "DELETE",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      bookmarkId,
-    }),
   });
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.message || "Erreur lors de la duplication");
+    throw new Error(errorData.message || "Erreur lors de la suppression");
   }
 
   return response.json();
 };
 
-export function useMutationDuplicateBookmarkSupabase() {
+export function useMutationDeleteBookmarkSupabase() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const createDuplicateBookmarkMutation = async (bookmarkId: string) => {
+  const deleteBookmarkMutation = async (bookmarkId: string) => {
     try {
-      const response = await duplicateBookmarkSupabase(bookmarkId);
+      const response = await deleteBookmarkSupabase(bookmarkId);
       return response;
     } catch (error) {
       throw error;
@@ -35,18 +32,18 @@ export function useMutationDuplicateBookmarkSupabase() {
   };
 
   const mutation = useMutation({
-    mutationFn: createDuplicateBookmarkMutation,
+    mutationFn: deleteBookmarkMutation,
     onError: (error: Error) => {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: error.message || "Une erreur est survenue lors de la duplication du bookmark.",
+        description: error.message || "Une erreur est survenue lors de la suppression du bookmark.",
       });
     },
     onSuccess: () => {
       toast({
         title: "Félicitations",
-        description: "Le bookmark a bien été dupliqué.",
+        description: "Le bookmark a bien été supprimé.",
       });
       queryClient.refetchQueries(["bookmarksDomain"]);
     },
