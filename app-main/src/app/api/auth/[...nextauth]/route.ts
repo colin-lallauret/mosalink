@@ -99,6 +99,18 @@ export const authOptions: NextAuthOptions = {
 
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      if (url.includes('callbackUrl=')) {
+        const callbackUrl = new URL(url).searchParams.get('callbackUrl');
+        if (callbackUrl) {
+          return decodeURIComponent(callbackUrl);
+        }
+      }
+      
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
+    },
   },
   session: {
     strategy: "database",

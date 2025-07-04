@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import prisma from "../../lib/prisma";
+import { supabaseAdmin } from "../../lib/supabase";
 import { authOptions } from "./api/auth/[...nextauth]/route";
 import { routeDomainFront } from "@/utils/routes/routesFront";
 import Link from "next/link";
@@ -18,28 +18,40 @@ export default async function Home() {
     return redirect("/super-admin");
   }
 
-  const domains = await prisma.domain.findMany({
-    where: { 
-      isPublish: true,
-      users: {
-        some: {
-          id: session.user.id
-        }
-      }
-    },
-    orderBy: { name: "asc" },
-    include: {
-      _count: {
-        select: {
-          users: true,
-          bookmark: true,
-          categories: true,
-        }
-      }
-    }
-  });
+  const { data: allDomains, error: domainsError } = await supabaseAdmin
+    .from('Domain')
+    .select('id, name, url, isPublish')
+    .eq('isPublish', true)
+    .order('name', { ascending: true });
 
-  const isSingle = domains.length === 1;
+  if (domainsError) {
+    console.error('Erreur lors de la récupération des domaines:', domainsError);
+    return <div>Erreur lors du chargement des domaines: {domainsError.message}</div>;
+  }
+
+  const { data: userDomains, error: userError } = await supabaseAdmin
+    .from('User')
+    .select('domainId')
+    .eq('id', session.user.id)
+    .single();
+
+  if (userError) {
+    console.error('Erreur lors de la récupération de l\'utilisateur:', userError);
+    return <div>Erreur lors du chargement des données utilisateur</div>;
+  }
+
+  const domains = allDomains?.filter(domain => domain.id === userDomains?.domainId) || [];
+
+  const enrichedDomains = domains.map(domain => ({
+    ...domain,
+    _count: {
+      users: 0,
+      bookmark: 0,
+      categories: 0
+    }
+  }));
+
+  const isSingle = enrichedDomains.length === 1;
 
   return (
     <main className="flex flex-col gap-8 w-full min-h-screen justify-center items-center p-8">
@@ -56,7 +68,7 @@ export default async function Home() {
             : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl"
         }
       >
-        {domains.map((domain) => (
+        {enrichedDomains.map((domain) => (
           <Link key={domain.id} href={routeDomainFront(domain.url)}>
             <div className="group border rounded-lg shadow-sm hover:shadow-md transition-all p-6 bg-white mx-auto">
               <div className="flex flex-col space-y-3">
@@ -82,7 +94,7 @@ export default async function Home() {
         ))}
       </div>
 
-      {domains.length === 0 && (
+      {enrichedDomains.length === 0 && (
         <div className="text-center text-gray-500">
           <p>Aucun domaine disponible pour le moment.</p>
         </div>

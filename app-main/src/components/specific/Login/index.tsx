@@ -63,7 +63,8 @@ const Login = () => {
           try {
             const result = await signIn("email", { 
               email: email,
-              redirect: false 
+              redirect: false,
+              callbackUrl: "/"
             });
             
             if (result?.ok) {

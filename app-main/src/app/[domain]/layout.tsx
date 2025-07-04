@@ -4,7 +4,7 @@ import { routeDomainFront } from "@/utils/routes/routesFront";
 import Header from "@/components/specific/Header";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import Footer from "@/components/specific/Footer";
-import prisma from "../../../lib/prisma";
+import { supabaseAdmin } from "../../../lib/supabase";
 
 export interface ParamsDomainRoute {
   params: {
@@ -22,19 +22,27 @@ export default async function Layout({ children, params }: Props) {
     return redirect("/login");
   }
 
-  const requestedDomain = await prisma.domain.findFirst({
-    where: { 
-      url: params.domain,
-      isPublish: true,
-      users: {
-        some: {
-          id: session.user.id
-        }
-      }
-    }
-  });
+  const { data: requestedDomain, error } = await supabaseAdmin
+    .from('Domain')
+    .select('id, name, url, isPublish')
+    .eq('url', params.domain)
+    .eq('isPublish', true)
+    .single();
 
-  if (!requestedDomain) {
+  if (error || !requestedDomain) {
+    console.error('Erreur lors de la récupération du domaine:', error);
+    return redirect("/");
+  }
+
+  const { data: userAccess, error: userError } = await supabaseAdmin
+    .from('User')
+    .select('id')
+    .eq('id', session.user.id)
+    .eq('domainId', requestedDomain.id)
+    .single();
+
+  if (userError || !userAccess) {
+    console.error('Utilisateur non autorisé pour ce domaine:', userError);
     return redirect("/");
   }
 

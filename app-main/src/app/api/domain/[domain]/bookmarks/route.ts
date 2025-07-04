@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../../../lib/prisma";
+import supabase from "../../../../../../lib/supabase";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../auth/[...nextauth]/route";
 
@@ -14,50 +14,39 @@ export async function GET(
   }
 
   try {
-    // Vérifier que le domaine existe et est publié
-    const domain = await prisma.domain.findFirst({
-      where: { 
-        url: params.domain,
-        isPublish: true 
-      }
-    });
+    const { data: domain, error: domainError } = await supabase
+      .from('Domain')
+      .select('id')
+      .eq('url', params.domain)
+      .eq('isPublish', true)
+      .single();
 
-    if (!domain) {
+    if (domainError || !domain) {
       return NextResponse.json({ error: "Domaine non trouvé" }, { status: 404 });
     }
 
-    // Récupérer les bookmarks du domaine spécifique
-    const bookmarks = await prisma.bookmark.findMany({
-      where: { 
-        domainId: domain.id
-      },
-      select: {
-        id: true,
-        url: true,
-        title: true,
-        description: true,
-        image: true,
-        tags: true,
-        category: {
-          select: {
-            name: true,
-            id: true,
-            url: true,
-          },
-        },
-        user: {
-          select: {
-            id: true,
-            email: true,
-          },
-        },
-      },
-      orderBy: {
-        creationDate: "desc",
-      },
-    });
+    const { data: bookmarks, error: bookmarksError } = await supabase
+      .from('Bookmark')
+      .select(`
+        id,
+        url,
+        title,
+        description,
+        image,
+        tags,
+        creationDate,
+        category:Category!inner(id, name, url),
+        user:User!inner(id, email)
+      `)
+      .eq('domainId', domain.id)
+      .order('creationDate', { ascending: false });
 
-    return NextResponse.json(bookmarks);
+    if (bookmarksError) {
+      console.error("Erreur récupération bookmarks:", bookmarksError);
+      return NextResponse.json({ error: "Erreur interne" }, { status: 500 });
+    }
+
+    return NextResponse.json(bookmarks || []);
   } catch (error) {
     console.error("Erreur récupération bookmarks:", error);
     return NextResponse.json({ error: "Erreur interne" }, { status: 500 });

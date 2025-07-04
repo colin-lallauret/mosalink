@@ -1,29 +1,32 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
-import prisma from "../../../../lib/prisma";
+import supabase from "../../../../lib/supabase";
 import { NextResponse } from "next/server";
 export async function GET() {
   const session = await getServerSession(authOptions);
 
-  const folders = await prisma.user
-    .findUnique({
-      where: { id: session?.user?.id },
-    })
-    .folders({
-      select: {
-        id: true,
-        name: true,
-        url: true,
-        userCreatorId: true,
-        bookmarks: {
-          select: {
-            id: true,
-          },
-        },
-      },
-    });
+  if (!session) {
+    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  }
 
-  return NextResponse.json(folders);
+  try {
+    const { data: folders, error } = await supabase
+      .from('Folder')
+      .select('*')
+      .eq('userCreatorId', session?.user?.id);
+
+    if (error) {
+      console.error("Erreur récupération folders:", error);
+      return NextResponse.json({ error: "Erreur interne", details: error.message }, { status: 500 });
+    }
+
+    const result = Array.isArray(folders) ? folders : [];
+    
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("Erreur récupération folders:", error);
+    return NextResponse.json({ error: "Erreur interne", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+  }
 }
 
 export async function POST(req: Request) {
@@ -56,14 +59,13 @@ export async function POST(req: Request) {
   }
 
   async function isUrlExists(url: string) {
-    // Utilisez Prisma pour vérifier si l'URL existe déjà dans la base de données
-    const existingUrl = await prisma.folder.findUnique({
-      where: {
-        url: url,
-      },
-    });
+    const { data, error } = await supabase
+      .from('Folder')
+      .select('id')
+      .eq('url', url)
+      .single();
 
-    return !!existingUrl;
+    return !!data && !error;
   }
 
   let url = normalizedUrl;
@@ -73,7 +75,6 @@ export async function POST(req: Request) {
     url = `${normalizedUrl}-${getRandomNumber()}`;
     counter += 1;
 
-    // Pour éviter une boucle infinie en cas de problème
     if (counter > 10) {
       throw new Error(
         "Échec de génération d'une URL unique après 10 tentatives."
@@ -81,19 +82,25 @@ export async function POST(req: Request) {
     }
   }
 
-  const newFolder = await prisma.folder.create({
-    data: {
-      name: data.name,
-      url: url,
-      userCreatorId: session.user.id,
-      users: {
-        connect: {
-          id: session.user.userId,
-          email: session.user.email,
-        },
-      },
-    },
-  });
+  try {
+    const { data: newFolder, error } = await supabase
+      .from('Folder')
+      .insert({
+        name: data.name,
+        url: url,
+        userCreatorId: session.user.id,
+      })
+      .select()
+      .single();
 
-  return NextResponse.json(newFolder);
+    if (error) {
+      console.error("Erreur création folder:", error);
+      return NextResponse.json({ error: "Erreur interne" }, { status: 500 });
+    }
+
+    return NextResponse.json(newFolder);
+  } catch (error) {
+    console.error("Erreur création folder:", error);
+    return NextResponse.json({ error: "Erreur interne" }, { status: 500 });
+  }
 }

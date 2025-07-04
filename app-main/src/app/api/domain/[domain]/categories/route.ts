@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "../../../../../../lib/prisma";
+import supabase from "../../../../../../lib/supabase";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../auth/[...nextauth]/route";
 
@@ -14,30 +14,30 @@ export async function GET(
   }
 
   try {
-    // Vérifier que le domaine existe et est publié
-    const domain = await prisma.domain.findFirst({
-      where: { 
-        url: params.domain,
-        isPublish: true 
-      }
-    });
+    const { data: domain, error: domainError } = await supabase
+      .from('Domain')
+      .select('id')
+      .eq('url', params.domain)
+      .eq('isPublish', true)
+      .single();
 
-    if (!domain) {
+    if (domainError || !domain) {
       return NextResponse.json({ error: "Domaine non trouvé" }, { status: 404 });
     }
 
-    // Récupérer les catégories du domaine spécifique
-    const categories = await prisma.category.findMany({
-      where: { 
-        domainId: domain.id,
-        isPublish: true 
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
+    const { data: categories, error: categoriesError } = await supabase
+      .from('Category')
+      .select('*')
+      .eq('domainId', domain.id)
+      .eq('isPublish', true)
+      .order('name', { ascending: true });
 
-    return NextResponse.json(categories);
+    if (categoriesError) {
+      console.error("Erreur récupération catégories:", categoriesError);
+      return NextResponse.json({ error: "Erreur interne" }, { status: 500 });
+    }
+
+    return NextResponse.json(categories || []);
   } catch (error) {
     console.error("Erreur récupération catégories:", error);
     return NextResponse.json({ error: "Erreur interne" }, { status: 500 });

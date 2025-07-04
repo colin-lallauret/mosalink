@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { isAdminDomain } from "@/utils/roles/utils";
 import { authOptions } from "../../auth/[...nextauth]/route";
-import prisma from "../../../../../lib/prisma";
+import supabase from "../../../../../lib/supabase";
 
 export async function DELETE(
   req: Request,
@@ -24,19 +24,32 @@ export async function DELETE(
     });
   }
 
-  const deleteBookmarks = await prisma.bookmark.deleteMany({
-    where: {
-      userId: params.id,
-    },
-  });
+  try {
+    const { error: deleteBookmarksError } = await supabase
+      .from('Bookmark')
+      .delete()
+      .eq('userId', params.id);
 
-  const deleteUser = await prisma.user.delete({
-    where: {
-      id: params.id,
-    },
-  });
+    if (deleteBookmarksError) {
+      console.error('Erreur suppression bookmarks:', deleteBookmarksError);
+      return NextResponse.json({ error: "Erreur lors de la suppression des bookmarks" }, { status: 500 });
+    }
 
-  return NextResponse.json({ deleteBookmarks, deleteUser });
+    const { error: deleteUserError } = await supabase
+      .from('User')
+      .delete()
+      .eq('id', params.id);
+
+    if (deleteUserError) {
+      console.error('Erreur suppression utilisateur:', deleteUserError);
+      return NextResponse.json({ error: "Erreur lors de la suppression de l'utilisateur" }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Erreur lors de la suppression:', error);
+    return NextResponse.json({ error: "Erreur interne" }, { status: 500 });
+  }
 }
 
 export async function PUT(
@@ -61,15 +74,25 @@ export async function PUT(
     });
   }
 
-  const user = await prisma.user.update({
-    where: {
-      id: params.id,
-    },
-    data: {
-      email: data.email,
-      role: data.role,
-    },
-  });
+  try {
+    const { data: user, error } = await supabase
+      .from('User')
+      .update({
+        email: data.email,
+        role: data.role,
+      })
+      .eq('id', params.id)
+      .select()
+      .single();
 
-  return NextResponse.json(user);
+    if (error) {
+      console.error('Erreur mise à jour utilisateur:', error);
+      return NextResponse.json({ error: "Erreur lors de la mise à jour" }, { status: 500 });
+    }
+
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour:', error);
+    return NextResponse.json({ error: "Erreur interne" }, { status: 500 });
+  }
 }

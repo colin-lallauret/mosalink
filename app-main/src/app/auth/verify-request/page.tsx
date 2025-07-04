@@ -1,7 +1,7 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { Mail } from "lucide-react";
 import { getServerSession } from "next-auth";
-import prisma from "../../../../lib/prisma";
+import supabase from "../../../../lib/supabase";
 import { redirect } from "next/navigation";
 import { routeDomainFront } from "@/utils/routes/routesFront";
 
@@ -9,10 +9,24 @@ const VerifyRequestPage = async () => {
   const session = await getServerSession(authOptions);
 
   if (session?.user.status === "authenticated") {
-    const domain = await prisma.user
-      .findUnique({ where: { email: session.user.email } })
-      .domain();
-    return domain && redirect(routeDomainFront(domain.url));
+    try {
+      const { data: user, error: userError } = await supabase
+        .from('User')
+        .select(`
+          id,
+          email,
+          domainId,
+          domain:Domain!inner(url)
+        `)
+        .eq('email', session.user.email)
+        .single();
+
+      if (!userError && user?.domain && Array.isArray(user.domain) && user.domain.length > 0) {
+        return redirect(routeDomainFront(user.domain[0].url));
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération du domaine:', error);
+    }
   }
 
   return (
