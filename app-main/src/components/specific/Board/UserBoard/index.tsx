@@ -1,6 +1,6 @@
 "use client";
 
-import { useQueryBookmarksUser } from "@/hooks/bookmark/useQueryBookmarksUser";
+import { useQueryBookmarksUserSupabase } from "@/hooks/bookmark/useQueryBookmarksUserSupabase";
 import Board from "..";
 import { useSession } from "next-auth/react";
 import { useMemo } from "react";
@@ -13,7 +13,7 @@ interface Props {
 }
 
 const UserBoard = ({ id }: Props) => {
-  const { data: bookmarks, isLoading, isError } = useQueryBookmarksUser(id);
+  const { data: bookmarks, isLoading, isError } = useQueryBookmarksUserSupabase(id);
   const { data: session } = useSession();
 
   const isCurrentUser = useMemo(() => {
