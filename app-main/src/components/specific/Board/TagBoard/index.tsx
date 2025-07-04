@@ -10,10 +10,16 @@ interface Props {
 }
 
 const TagBoard = ({ id }: Props) => {
-  const { data: bookmarks, isLoading, isError } = useQueryBookmarksTags(id);
+  const { 
+    data: bookmarks, 
+    isLoading, 
+    isError, 
+    error 
+  } = useQueryBookmarksTags(id);
 
   if (isError) {
-    return <p className="text-center text-red-500">Une erreur est survenue</p>;
+    console.error("Erreur lors du chargement des bookmarks par tag:", error);
+    return <p className="text-center text-red-500">Une erreur est survenue lors du chargement des bookmarks</p>;
   }
 
   return (

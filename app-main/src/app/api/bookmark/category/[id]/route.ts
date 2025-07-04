@@ -1,5 +1,5 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import prisma from "../../../../../../lib/prisma";
+import { supabaseAdmin } from "../../../../../../lib/supabase";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -11,48 +11,49 @@ export async function GET(
 
   if (!session) {
     return NextResponse.json({
-      message: "Vous devez être connecté pour accéder à cette page",
+      message: "Vous devez être connecté pour accéder à cette page",
       status: 403,
     });
   }
 
-  const bookmarks = await prisma.domain
-    .findUnique({
-      where: {
-        id: session.user.domainId,
-      },
-    })
-    .bookmark({
-      select: {
-        id: true,
-        url: true,
-        title: true,
-        description: true,
-        image: true,
-        tags: true,
-        category: {
-          select: {
-            name: true,
-            id: true,
-            url: true,
-          },
-        },
-        user: {
-          select: {
-            id: true,
-            email: true,
-          },
-        },
-      },
-      where: {
-        category: {
-          url: params.id,
-        },
-      },
-      orderBy: {
-        creationDate: "desc",
-      },
-    });
+  try {
+    const { data: bookmarks, error } = await supabaseAdmin
+      .from('Bookmark')
+      .select(`
+        id,
+        url,
+        title,
+        description,
+        image,
+        tags,
+        category:Category!inner (
+          id,
+          name,
+          url
+        ),
+        user:User!inner (
+          id,
+          email
+        )
+      `)
+      .eq('category.url', params.id)
+      .eq('user.domainId', session.user.domainId)
+      .order('creationDate', { ascending: false });
 
-  return NextResponse.json(bookmarks);
+    if (error) {
+      console.error("Erreur lors de la récupération des bookmarks:", error);
+      return NextResponse.json({
+        message: "Erreur lors de la récupération des bookmarks",
+        error: error.message,
+      }, { status: 500 });
+    }
+
+    return NextResponse.json(bookmarks || []);
+  } catch (error) {
+    console.error("Erreur générale:", error);
+    return NextResponse.json({
+      message: "Erreur interne du serveur",
+      error: error instanceof Error ? error.message : "Erreur inconnue",
+    }, { status: 500 });
+  }
 }

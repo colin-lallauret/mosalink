@@ -5,82 +5,116 @@ import { Database } from "./database.types"
 export function SupabaseAdapter(supabase: SupabaseClient<Database>): Adapter {
   return {
     async createUser(user) {
-      const { data: defaultDomain } = await supabase
-        .from("Domain")
-        .select("id")
-        .eq("name", "test")
-        .single();
-
-      let domainId = defaultDomain?.id;
-      if (!domainId) {
-        const { data: firstDomain } = await supabase
+      console.log("🚀 CreateUser appelé avec:", user);
+      
+      try {
+        const { data: defaultDomain } = await supabase
           .from("Domain")
           .select("id")
-          .limit(1)
+          .eq("name", "test")
           .single();
-        domainId = firstDomain?.id || 'clkgzh6ep0000x9im9ze8s653'; // super-admin
-      }
 
-      const { data, error } = await supabase
-        .from("User")
-        .insert({
-          id: crypto.randomUUID(),
-          email: user.email,
-          name: user.name,
-          image: user.image,
-          emailVerified: user.emailVerified?.toISOString(),
-          domainId: domainId,
-          role: 'USER'
-        })
-        .select()
-        .single()
+        let domainId = defaultDomain?.id;
+        if (!domainId) {
+          const { data: firstDomain } = await supabase
+            .from("Domain")
+            .select("id")
+            .limit(1)
+            .single();
+          domainId = firstDomain?.id || 'clkgzh6ep0000x9im9ze8s653'; // super-admin
+        }
 
-      if (error) throw error
-      
-      return {
-        id: data.id,
-        email: data.email!,
-        name: data.name,
-        image: data.image,
-        emailVerified: data.emailVerified ? new Date(data.emailVerified) : null,
+        const { data, error } = await supabase
+          .from("User")
+          .insert({
+            id: crypto.randomUUID(),
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            emailVerified: user.emailVerified?.toISOString(),
+            domainId: domainId,
+            role: 'USER'
+          })
+          .select()
+          .single()
+
+        if (error) {
+          console.error("❌ Erreur lors de la création de l'utilisateur:", error);
+          throw error;
+        }
+        
+        console.log("✅ Utilisateur créé avec succès:", data);
+        return {
+          id: data.id,
+          email: data.email!,
+          name: data.name,
+          image: data.image,
+          emailVerified: data.emailVerified ? new Date(data.emailVerified) : null,
+        }
+      } catch (error) {
+        console.error("❌ Erreur dans createUser:", error);
+        throw error;
       }
     },
 
     async getUser(id) {
-      const { data, error } = await supabase
-        .from("User")
-        .select()
-        .eq("id", id)
-        .maybeSingle()
+      console.log("🔍 GetUser appelé avec id:", id);
+      
+      try {
+        const { data, error } = await supabase
+          .from("User")
+          .select()
+          .eq("id", id)
+          .maybeSingle()
 
-      if (error) throw error
-      if (!data) return null
+        if (error) {
+          console.error("❌ Erreur lors de la récupération de l'utilisateur:", error);
+          throw error;
+        }
+        
+        if (!data) return null
 
-      return {
-        id: data.id,
-        email: data.email!,
-        name: data.name,
-        image: data.image,
-        emailVerified: data.emailVerified ? new Date(data.emailVerified) : null,
+        console.log("✅ Utilisateur trouvé:", data);
+        return {
+          id: data.id,
+          email: data.email!,
+          name: data.name,
+          image: data.image,
+          emailVerified: data.emailVerified ? new Date(data.emailVerified) : null,
+        }
+      } catch (error) {
+        console.error("❌ Erreur dans getUser:", error);
+        throw error;
       }
     },
 
     async getUserByEmail(email) {
-      const { data, error } = await supabase
-        .from("User")
-        .select()
-        .eq("email", email)
-        .maybeSingle()
+      try {
+        console.log("Tentative de récupération de l'utilisateur par email:", email);
+        const { data, error } = await supabase
+          .from("User")
+          .select()
+          .eq("email", email)
+          .maybeSingle()
 
-      if (error) throw error
-      if (!data) return null
+        if (error) {
+          console.error("Erreur Supabase dans getUserByEmail:", error);
+          throw error;
+        }
+        
+        console.log("Utilisateur trouvé:", data ? "Oui" : "Non");
+        if (!data) return null
 
-      return {
-        id: data.id,
-        email: data.email!,
-        name: data.name,
-        image: data.image,
-        emailVerified: data.emailVerified ? new Date(data.emailVerified) : null,
+        return {
+          id: data.id,
+          email: data.email!,
+          name: data.name,
+          image: data.image,
+          emailVerified: data.emailVerified ? new Date(data.emailVerified) : null,
+        }
+      } catch (error) {
+        console.error("Erreur complète dans getUserByEmail:", error);
+        throw error;
       }
     },
 

@@ -4,6 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 
 const fetchCategoriesDomain = async (domain: string): Promise<Category[]> => {
   const response = await fetch(`${routeIndexFront}/api/domain/${domain}/categories`);
+  
+  if (!response.ok) {
+    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+  }
+  
   return response.json();
 };
 

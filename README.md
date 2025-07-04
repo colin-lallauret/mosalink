@@ -76,9 +76,9 @@ npx prisma generate
 ### Changement pour la production
 
 - ✅ Création d'un repo GitHub
-- ⬜️ Utilisation de Vercel pour le serveur de production (gratuit)
-  - ⬜️ npm build en prod
-  - ⬜️ Changer les variables du .env directement sur Vercel
+- ✅ Utilisation de Vercel pour le serveur de production (gratuit)
+  - ✅ npm build en prod
+  - ✅ Changer les variables du .env directement sur Vercel
 - ✅ Changement au niveau du serveur SMTP (envoie de mail), utilisation de Mailtrap (gratuit)
   - Configuration de mailtrap (ajout d'un DNS)
   - Utilisatation du "Transactional Stream" (https://mailtrap.io/sending/domains)

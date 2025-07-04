@@ -42,7 +42,12 @@ export const authOptions: NextAuthOptions = {
       },
       from: process.env.EMAIL_FROM,
       async sendVerificationRequest(params) {
-        await sendVerificationRequest(params);
+        try {
+          await sendVerificationRequest(params);
+        } catch (error) {
+          console.error("Erreur lors de l'envoi du mail de vérification:", error);
+          throw error;
+        }
       },
     }),
   ],

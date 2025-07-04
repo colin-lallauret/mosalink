@@ -20,11 +20,13 @@ const CategoryBoard = ({ id, domain }: Props) => {
     data: bookmarks,
     isLoading,
     isError,
+    error: bookmarksError,
   } = useQueryBookmarksCategories(id);
   const {
     data: categories,
     isLoading: isLoadingCategories,
     isError: isErrorCategories,
+    error: categoriesError,
   } = useQueryCategoriesDomain(domain);
 
   const titleContent = useMemo(() => {
@@ -33,7 +35,8 @@ const CategoryBoard = ({ id, domain }: Props) => {
     }
 
     if (isErrorCategories) {
-      return "Une erreur est survenue";
+      console.error("Erreur lors du chargement des catégories:", categoriesError);
+      return "Une erreur est survenue lors du chargement des catégories";
     }
 
     const category = categories?.find((category) => {
@@ -41,14 +44,16 @@ const CategoryBoard = ({ id, domain }: Props) => {
     });
 
     if (!category) {
-      ("La categorie n'existe pas");
+      console.warn("Catégorie non trouvée:", { id, categories });
+      return "La catégorie n'existe pas";
     }
 
     return category?.name ?? "";
-  }, [categories, id, isErrorCategories, isLoadingCategories]);
+  }, [categories, id, isErrorCategories, isLoadingCategories, categoriesError]);
 
   if (isError) {
-    return <p className="text-center text-red-500">Une erreur est survenue</p>;
+    console.error("Erreur lors du chargement des bookmarks:", bookmarksError);
+    return <p className="text-center text-red-500">Une erreur est survenue lors du chargement des bookmarks</p>;
   }
 
   return (
