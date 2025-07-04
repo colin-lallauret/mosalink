@@ -9,7 +9,7 @@ import CategoriesSelect from "../CreateBookmark/BookmarkInput/CategoriesSelect";
 import TagsInput from "../CreateBookmark/BookmarkInput/TagsInput";
 import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useMutationUpdateBookmark } from "@/hooks/useBookmark";
+import { useMutationUpdateBookmarkSupabase } from "@/hooks/bookmark/useMutationUpdateBookmarkSupabase";
 import { BookmarkData } from "@/hooks/bookmark/useQueryBookmarksUser";
 
 interface Props {
@@ -18,7 +18,7 @@ interface Props {
 }
 
 const BookmarkModif = ({ bookmark, setOpenDialog }: Props) => {
-  const mutation = useMutationUpdateBookmark();
+  const mutation = useMutationUpdateBookmarkSupabase();
 
   const [tags, setTags] = useState<string[]>(bookmark.tags);
   const [categoryId, setCategoryId] = useState<string | undefined>(
