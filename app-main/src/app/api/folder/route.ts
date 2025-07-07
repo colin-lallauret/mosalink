@@ -103,6 +103,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Erreur interne" }, { status: 500 });
     }
 
+    try {
+      const { error: folderUserError } = await supabase
+        .from('FolderUser')
+        .insert({
+          folderId: newId,
+          userId: session.user.id,
+        });
+
+      if (folderUserError) {
+        console.error("Erreur ajout créateur au projet:", folderUserError);
+      } else {
+        console.log("Créateur ajouté automatiquement au projet");
+      }
+    } catch (folderUserError) {
+      console.error("Erreur ajout créateur au projet:", folderUserError);
+    }
+
     return NextResponse.json(newFolder);
   } catch (error) {
     console.error("Erreur création folder:", error);

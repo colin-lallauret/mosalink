@@ -52,9 +52,11 @@ const MyProjets = () => {
       </DialogHeader>
       <DialogDescription asChild>
         <div className="flex flex-col gap-2 py-4">
-          <p className="text-md text-slate-900 font-bold">
-            Mes {foldersData?.length ?? "0"} projet(s)
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-md text-slate-900 font-bold">
+              Mes {foldersData?.length ?? "0"} projet(s)
+            </p>
+          </div>
           {foldersData?.map((folder) => (
             <div
               key={folder.id}
@@ -64,7 +66,7 @@ const MyProjets = () => {
                 <DialogTrigger asChild>
                   <Link
                     href={routeFolderFront(
-                      sessionData?.user.domainUrl,
+                      sessionData?.user.domainUrl || "",
                       folder.id
                     )}
                     className="text-sm"
