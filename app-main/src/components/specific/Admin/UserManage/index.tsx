@@ -63,7 +63,7 @@ const UserManage = () => {
               key={user.id}
               id={user.id}
               email={user.email ?? ""}
-              role={user.role}
+              role={(user.role as Role) ?? Role.USER}
             />
           ))}
       </div>

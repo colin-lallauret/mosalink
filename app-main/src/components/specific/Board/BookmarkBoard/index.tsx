@@ -36,7 +36,7 @@ const BookmarkBoard = ({ bookmarks, isLoading, folderId, isPublic }: Props) => {
         </p>
         <Button
           className="p-2 flex gap-2 text-lg"
-          onClick={() => router.push(routeCreateBookmarkFront(domainUrl))}
+          onClick={() => domainUrl && router.push(routeCreateBookmarkFront(domainUrl))}
         >
           <Plus className="w-5 h-5" /> Insérer un lien
         </Button>

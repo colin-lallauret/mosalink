@@ -15,10 +15,10 @@ const Header = ({ currentDomain }: Props) => {
   const { data: dataSession } = useSession();
   const params = useParams();
 
-  const domainUrl = currentDomain?.url || (params?.domain as string) || dataSession?.user.domainUrl;
-  const domainName = currentDomain?.name || dataSession?.user.domainName;
+  const domainUrl = currentDomain?.url || (params?.domain as string) || dataSession?.user.domainUrl || '';
+  const domainName = currentDomain?.name || dataSession?.user.domainName || '';
 
-  const { data: allCategories } = useQueryCategoriesDomain(domainUrl || '');
+  const { data: allCategories } = useQueryCategoriesDomain(domainUrl);
 
   return (
     <header className="w-full sticky top-0 left-0 px-4">

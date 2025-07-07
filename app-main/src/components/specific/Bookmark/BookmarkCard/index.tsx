@@ -113,12 +113,15 @@ const BookmarkCard = ({ bookmark, folderId, isPublic }: Props) => {
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
-            router.push(
-              routeCategorieFront(
-                session.data?.user.domainName,
-                bookmark.category.url
-              )
-            );
+            const domainName = session.data?.user.domainName;
+            if (domainName) {
+              router.push(
+                routeCategorieFront(
+                  domainName,
+                  bookmark.category.url
+                )
+              );
+            }
           }}
         >
           {bookmark.category.name}
@@ -134,7 +137,10 @@ const BookmarkCard = ({ bookmark, folderId, isPublic }: Props) => {
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              router.push(routeTagFront(session.data?.user.domainName, tag));
+              const domainName = session.data?.user.domainName;
+              if (domainName) {
+                router.push(routeTagFront(domainName, tag));
+              }
             }}
           >
             {tag}
@@ -147,9 +153,12 @@ const BookmarkCard = ({ bookmark, folderId, isPublic }: Props) => {
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
-          router.push(
-            routeUserFront(session.data?.user.domainName, bookmark.user.id)
-          );
+          const domainName = session.data?.user.domainName;
+          if (domainName) {
+            router.push(
+              routeUserFront(domainName, bookmark.user.id)
+            );
+          }
         }}
       >
         {bookmark.user.email}

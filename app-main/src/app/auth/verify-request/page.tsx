@@ -8,7 +8,7 @@ import { routeDomainFront } from "@/utils/routes/routesFront";
 const VerifyRequestPage = async () => {
   const session = await getServerSession(authOptions);
 
-  if (session?.user.status === "authenticated") {
+  if (session?.user) {
     try {
       const { data: user, error: userError } = await supabase
         .from('User')

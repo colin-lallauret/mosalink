@@ -108,7 +108,7 @@ const Navigation = ({ domain, categories }: Props) => {
           </DropdownMenu>
         )}
         <Link
-          href={routeUserFront(domain, dataSession?.user.id)}
+          href={routeUserFront(domain, dataSession?.user.id || '')}
           legacyBehavior
           passHref
         >

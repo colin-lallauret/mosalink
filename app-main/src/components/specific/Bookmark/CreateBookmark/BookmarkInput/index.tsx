@@ -86,7 +86,10 @@ const BookmarkInput = ({ url, setUrl }: Props) => {
   }, [categoryId, image, metaDescription, mutation, tags, title, url]);
 
   if (mutation.isSuccess) {
-    router.push(routeDomainFront(session.data?.user.domainName));
+    const domainName = session.data?.user.domainName;
+    if (domainName) {
+      router.push(routeDomainFront(domainName));
+    }
   }
 
   return (
