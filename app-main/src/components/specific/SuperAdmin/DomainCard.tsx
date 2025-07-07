@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/dialog";
 import { DomainWithDetails } from "@/hooks/super-admin/useQuerySuperAdminDomains";
 import { useMutationDeleteDomain } from "@/hooks/super-admin/useMutationDeleteDomain";
-import { useMutationRemoveDomainAdmin } from "@/hooks/super-admin/useMutationRemoveDomainAdmin";
 import { useToast } from "@/components/ui/use-toast";
 import { 
   Trash2, 
@@ -28,9 +27,8 @@ import {
   BookmarkIcon, 
   Folder,
   Globe,
-  UserMinus,
 } from "lucide-react";
-import AddAdminDialog from "./AddAdminDialog";
+import ManageUsersDialog from "./ManageUsersDialog";
 
 interface DomainCardProps {
   domain: DomainWithDetails;
@@ -38,15 +36,9 @@ interface DomainCardProps {
 
 export default function DomainCard({ domain }: DomainCardProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [removeAdminDialog, setRemoveAdminDialog] = useState<{
-    open: boolean;
-    adminId: string;
-    adminEmail: string;
-  }>({ open: false, adminId: "", adminEmail: "" });
 
   const { toast } = useToast();
   const deleteDomainMutation = useMutationDeleteDomain();
-  const removeAdminMutation = useMutationRemoveDomainAdmin();
 
   const handleDeleteDomain = async () => {
     if (domain.name === "super-admin") {
@@ -65,26 +57,6 @@ export default function DomainCard({ domain }: DomainCardProps) {
         description: "Domaine supprimé avec succès",
       });
       setDeleteDialogOpen(false);
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: error instanceof Error ? error.message : "Erreur lors de la suppression",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleRemoveAdmin = async () => {
-    try {
-      await removeAdminMutation.mutateAsync({
-        domainId: domain.id,
-        userId: removeAdminDialog.adminId,
-      });
-      toast({
-        title: "Succès",
-        description: `Administrateur ${removeAdminDialog.adminEmail} supprimé avec succès`,
-      });
-      setRemoveAdminDialog({ open: false, adminId: "", adminEmail: "" });
     } catch (error) {
       toast({
         title: "Erreur",
@@ -152,44 +124,8 @@ export default function DomainCard({ domain }: DomainCardProps) {
               Limite de catégories: {domain.maximumCategories}
             </div>
 
-            {/* Administrateurs */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <h4 className="font-semibold text-sm">Administrateurs</h4>
-                <AddAdminDialog domainId={domain.id} domainName={domain.name} />
-              </div>
-              {domain.users.length > 0 ? (
-                <div className="space-y-2">
-                  {domain.users.map((admin) => (
-                    <div
-                      key={admin.id}
-                      className="flex justify-between items-center p-2 bg-gray-50 rounded"
-                    >
-                      <div>
-                        <div className="font-medium text-sm">
-                          {admin.name || admin.email}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {admin.email} • Créé le {formatDate(admin.creationDate)}
-                        </div>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => setRemoveAdminDialog({
-                          open: true,
-                          adminId: admin.id,
-                          adminEmail: admin.email
-                        })}
-                      >
-                        <UserMinus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500">Aucun administrateur</p>
-              )}
+            <div className="flex justify-between items-center pt-2 border-t">
+              <ManageUsersDialog domain={domain} />
             </div>
           </div>
         </CardContent>
@@ -211,30 +147,6 @@ export default function DomainCard({ domain }: DomainCardProps) {
               Annuler
             </Button>
             <Button variant="destructive" onClick={handleDeleteDomain}>
-              Supprimer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog de suppression d'admin */}
-      <Dialog open={removeAdminDialog.open} onOpenChange={(open) => 
-        setRemoveAdminDialog({ ...removeAdminDialog, open })
-      }>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Supprimer l&apos;administrateur</DialogTitle>
-            <DialogDescription>
-              Êtes-vous sûr de vouloir supprimer l&apos;administrateur &quot;{removeAdminDialog.adminEmail}&quot; ?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => 
-              setRemoveAdminDialog({ open: false, adminId: "", adminEmail: "" })
-            }>
-              Annuler
-            </Button>
-            <Button variant="destructive" onClick={handleRemoveAdmin}>
               Supprimer
             </Button>
           </DialogFooter>

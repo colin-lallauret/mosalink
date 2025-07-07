@@ -1,8 +1,9 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
-import prisma from "../../../../../lib/prisma";
+import { domainQueries, userQueries } from "../../../../../lib/supabase-queries";
 import { NextResponse } from "next/server";
 import { isSuperAdmin } from "@/utils/roles/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 // GET - Récupérer tous les domaines avec leurs administrateurs
 export async function GET() {
@@ -13,32 +14,7 @@ export async function GET() {
       return NextResponse.json({ error: "Accès non autorisé" }, { status: 403 });
     }
 
-    const domains = await prisma.domain.findMany({
-      include: {
-        users: {
-          where: {
-            role: "ADMIN"
-          },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-            creationDate: true
-          }
-        },
-        _count: {
-          select: {
-            users: true,
-            categories: true,
-            bookmark: true
-          }
-        }
-      },
-      orderBy: {
-        creationDate: 'desc'
-      }
-    });
+    const domains = await domainQueries.findManyWithCounts();
 
     return NextResponse.json(domains);
   } catch (error) {
@@ -69,16 +45,10 @@ export async function POST(req: Request) {
     }
 
     // Vérifier si le domaine existe déjà
-    const existingDomain = await prisma.domain.findFirst({
-      where: {
-        OR: [
-          { name: name },
-          { url: url }
-        ]
-      }
-    });
+    const existingDomainByName = await domainQueries.findUnique({ name });
+    const existingDomainByUrl = await domainQueries.findUnique({ url });
 
-    if (existingDomain) {
+    if (existingDomainByName || existingDomainByUrl) {
       return NextResponse.json(
         { error: "Un domaine avec ce nom ou cette URL existe déjà" },
         { status: 409 }
@@ -86,50 +56,68 @@ export async function POST(req: Request) {
     }
 
     // Créer le domaine
-    const newDomain = await prisma.domain.create({
-      data: {
-        name,
-        url,
-        isPublish: isPublish || false,
-        maximumCategories: maximumCategories || 10
-      }
+    const newDomain = await domainQueries.create({
+      id: createId(),
+      name,
+      url,
+      isPublish: isPublish || false,
+      maximumCategories: maximumCategories || 10,
+      creationDate: new Date().toISOString(),
+      lastUpdateDate: new Date().toISOString(),
     });
+    
+    console.log("Domaine créé:", newDomain);
 
     // Si un email d'admin est fourni, créer l'utilisateur admin
     if (adminEmail) {
-      await prisma.user.create({
-        data: {
+      try {
+        await userQueries.create({
+          id: createId(),
           email: adminEmail,
           role: "ADMIN",
-          domainId: newDomain.id
-        }
-      });
+          domainId: newDomain.id,
+          creationDate: new Date().toISOString(),
+          lastUpdateDate: new Date().toISOString(),
+        });
+        console.log("Utilisateur admin créé pour:", adminEmail);
+      } catch (userError) {
+        console.error("Erreur lors de la création de l'utilisateur admin:", userError);
+        // On continue même si la création de l'utilisateur admin échoue
+      }
     }
 
-    const domainWithDetails = await prisma.domain.findUnique({
-      where: { id: newDomain.id },
-      include: {
-        users: {
-          where: { role: "ADMIN" },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-            creationDate: true
+    try {
+      const domainWithDetails = await domainQueries.findUniqueWithCounts(newDomain.id);
+      
+      // Si on n'arrive pas à récupérer les détails, on renvoie au moins le domaine créé
+      if (!domainWithDetails) {
+        console.log("Impossible de récupérer les détails, retour du domaine de base");
+        return NextResponse.json({
+          ...newDomain,
+          users: [],
+          _count: {
+            users: 0,
+            categories: 0,
+            bookmark: 0,
           }
-        },
-        _count: {
-          select: {
-            users: true,
-            categories: true,
-            bookmark: true
-          }
-        }
+        }, { status: 201 });
       }
-    });
 
-    return NextResponse.json(domainWithDetails, { status: 201 });
+      console.log("Domaine avec détails récupéré:", domainWithDetails);
+      return NextResponse.json(domainWithDetails, { status: 201 });
+    } catch (detailsError) {
+      console.error("Erreur lors de la récupération des détails:", detailsError);
+      // Retourner le domaine créé même si on ne peut pas récupérer les détails
+      return NextResponse.json({
+        ...newDomain,
+        users: [],
+        _count: {
+          users: 0,
+          categories: 0,
+          bookmark: 0,
+        }
+      }, { status: 201 });
+    }
   } catch (error) {
     console.error("Erreur lors de la création du domaine:", error);
     return NextResponse.json(

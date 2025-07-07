@@ -1,8 +1,9 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../../../auth/[...nextauth]/route";
-import prisma from "../../../../../../../lib/prisma";
+import { domainQueries, userQueries } from "../../../../../../../lib/supabase-queries";
 import { NextResponse } from "next/server";
 import { isSuperAdmin } from "@/utils/roles/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 // POST - Ajouter un administrateur à un domaine
 export async function POST(
@@ -27,9 +28,7 @@ export async function POST(
     }
 
     // Vérifier si le domaine existe
-    const domain = await prisma.domain.findUnique({
-      where: { id: domainId }
-    });
+    const domain = await domainQueries.findUnique({ id: domainId });
 
     if (!domain) {
       return NextResponse.json(
@@ -39,9 +38,7 @@ export async function POST(
     }
 
     // Vérifier si l'utilisateur existe déjà
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    });
+    const existingUser = await userQueries.findUnique({ email });
 
     if (existingUser) {
       return NextResponse.json(
@@ -51,13 +48,14 @@ export async function POST(
     }
 
     // Créer l'utilisateur admin
-    const newAdmin = await prisma.user.create({
-      data: {
-        email,
-        name: name || null,
-        role: "ADMIN",
-        domainId
-      }
+    const newAdmin = await userQueries.create({
+      id: createId(),
+      email,
+      name: name || null,
+      role: "ADMIN",
+      domainId,
+      creationDate: new Date().toISOString(),
+      lastUpdateDate: new Date().toISOString(),
     });
 
     return NextResponse.json({
@@ -99,13 +97,8 @@ export async function DELETE(
     }
 
     // Vérifier si l'utilisateur existe et est admin du domaine
-    const user = await prisma.user.findFirst({
-      where: {
-        id: userId,
-        domainId: domainId,
-        role: "ADMIN"
-      }
-    });
+    const users = await userQueries.findMany({ domainId });
+    const user = users.find(u => u.id === userId && u.role === "ADMIN");
 
     if (!user) {
       return NextResponse.json(
@@ -115,9 +108,7 @@ export async function DELETE(
     }
 
     // Supprimer l'utilisateur
-    await prisma.user.delete({
-      where: { id: userId }
-    });
+    await userQueries.delete(userId);
 
     return NextResponse.json({ message: "Administrateur supprimé avec succès" });
   } catch (error) {

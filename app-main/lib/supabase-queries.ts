@@ -54,12 +54,80 @@ export const userQueries = {
   },
 
   async delete(id: string) {
+    console.log("Début de la suppression de l'utilisateur:", id);
+        
+    try {
+      const { error: sessionsError } = await supabaseAdmin
+        .from("Session")
+        .delete()
+        .eq("userId", id);
+      
+      if (sessionsError) {
+        console.error("Erreur lors de la suppression des sessions:", sessionsError);
+      } else {
+        console.log("Sessions supprimées");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la suppression des sessions:", error);
+    }
+    
+    try {
+      const { error: folderUserError } = await supabaseAdmin
+        .from("FolderUser")
+        .delete()
+        .eq("userId", id);
+      
+      if (folderUserError) {
+        console.error("Erreur lors de la suppression des relations FolderUser:", folderUserError);
+      } else {
+        console.log("Relations FolderUser supprimées");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la suppression des relations FolderUser:", error);
+    }
+    
+    try {
+      const { data: bookmarks } = await supabaseAdmin
+        .from("Bookmark")
+        .select("id")
+        .eq("userId", id);
+      
+      if (bookmarks && bookmarks.length > 0) {
+        const bookmarkIds = bookmarks.map(b => b.id);
+        
+        await supabaseAdmin
+          .from("FolderBookmark")
+          .delete()
+          .in("bookmarkId", bookmarkIds);
+        
+        console.log("Relations FolderBookmark supprimées pour l'utilisateur");
+      }
+      
+      const { error: bookmarksError } = await supabaseAdmin
+        .from("Bookmark")
+        .delete()
+        .eq("userId", id);
+      
+      if (bookmarksError) {
+        console.error("Erreur lors de la suppression des bookmarks:", bookmarksError);
+      } else {
+        console.log("Bookmarks supprimés");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la suppression des bookmarks:", error);
+    }
+    
     const { error } = await supabaseAdmin
       .from("User")
       .delete()
       .eq("id", id);
     
-    if (error) throw error;
+    if (error) {
+      console.error("Erreur lors de la suppression de l'utilisateur:", error);
+      throw error;
+    }
+    
+    console.log("Utilisateur supprimé avec succès");
   },
 
   async findWithDomain(userId: string) {
@@ -115,6 +183,123 @@ export const domainQueries = {
     return data || [];
   },
 
+  async findManyWithCounts() {
+    const { data: domains, error } = await supabaseAdmin
+      .from("Domain")
+      .select(`
+        *,
+        User!User_domainId_fkey (
+          id,
+          name,
+          email,
+          role,
+          creationDate
+        )
+      `)
+      .order("creationDate", { ascending: false });
+    
+    if (error) throw error;
+    
+    if (!domains) return [];
+    
+    const domainsWithCounts = await Promise.all(
+      domains.map(async (domain) => {
+        const { count: userCount, error: userCountError } = await supabaseAdmin
+          .from("User")
+          .select("*", { count: "exact", head: true })
+          .eq("domainId", domain.id);
+        
+        if (userCountError) throw userCountError;
+        
+        const { count: categoryCount, error: categoryCountError } = await supabaseAdmin
+          .from("Category")
+          .select("*", { count: "exact", head: true })
+          .eq("domainId", domain.id);
+        
+        if (categoryCountError) throw categoryCountError;
+        
+        const { count: bookmarkCount, error: bookmarkCountError } = await supabaseAdmin
+          .from("Bookmark")
+          .select("*", { count: "exact", head: true })
+          .eq("domainId", domain.id);
+        
+        if (bookmarkCountError) throw bookmarkCountError;
+        
+        const adminUsers = domain.User?.filter((user: any) => user.role === "ADMIN") || [];
+        
+        return {
+          ...domain,
+          users: adminUsers,
+          _count: {
+            users: userCount || 0,
+            categories: categoryCount || 0,
+            bookmark: bookmarkCount || 0,
+          }
+        };
+      })
+    );
+    
+    return domainsWithCounts;
+  },
+
+  async findUniqueWithCounts(id: string) {
+    try {
+      const { data: domain, error } = await supabaseAdmin
+        .from("Domain")
+        .select(`
+          *,
+          User!User_domainId_fkey (
+            id,
+            name,
+            email,
+            role,
+            creationDate
+          )
+        `)
+        .eq("id", id)
+        .single();
+      
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return null; 
+        }
+        throw error;
+      }
+      
+      if (!domain) return null;
+      
+      const { count: userCount, error: userCountError } = await supabaseAdmin
+        .from("User")
+        .select("*", { count: "exact", head: true })
+        .eq("domainId", domain.id);
+      
+      const { count: categoryCount, error: categoryCountError } = await supabaseAdmin
+        .from("Category")
+        .select("*", { count: "exact", head: true })
+        .eq("domainId", domain.id);
+      
+      const { count: bookmarkCount, error: bookmarkCountError } = await supabaseAdmin
+        .from("Bookmark")
+        .select("*", { count: "exact", head: true })
+        .eq("domainId", domain.id);
+      
+      const adminUsers = domain.User?.filter((user: any) => user.role === "ADMIN") || [];
+      
+      return {
+        ...domain,
+        users: adminUsers,
+        _count: {
+          users: userCount || 0,
+          categories: categoryCount || 0,
+          bookmark: bookmarkCount || 0,
+        }
+      };
+    } catch (error) {
+      console.error("Erreur dans findUniqueWithCounts:", error);
+      return null;
+    }
+  },
+
   async create(data: Tables['Domain']['Insert']) {
     const { data: newDomain, error } = await supabaseAdmin
       .from("Domain")
@@ -139,12 +324,113 @@ export const domainQueries = {
   },
 
   async delete(id: string) {
-    const { error } = await supabaseAdmin
-      .from("Domain")
-      .delete()
-      .eq("id", id);
+    console.log("Début de la suppression du domaine:", id);
+        
+    try {
+      const { data: bookmarks } = await supabaseAdmin
+        .from("Bookmark")
+        .select("id")
+        .eq("domainId", id);
+      
+      if (bookmarks && bookmarks.length > 0) {
+        const bookmarkIds = bookmarks.map(b => b.id);
+        await supabaseAdmin
+          .from("FolderBookmark")
+          .delete()
+          .in("bookmarkId", bookmarkIds);
+        console.log("Relations FolderBookmark supprimées");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la suppression des relations FolderBookmark:", error);
+    }
     
-    if (error) throw error;
+    try {
+      const { error: bookmarksError } = await supabaseAdmin
+        .from("Bookmark")
+        .delete()
+        .eq("domainId", id);
+      
+      if (bookmarksError) throw bookmarksError;
+      console.log("Bookmarks supprimés");
+    } catch (error) {
+      console.error("Erreur lors de la suppression des bookmarks:", error);
+      throw error;
+    }
+    
+    try {
+      const { error: categoriesError } = await supabaseAdmin
+        .from("Category")
+        .delete()
+        .eq("domainId", id);
+      
+      if (categoriesError) throw categoriesError;
+      console.log("Catégories supprimées");
+    } catch (error) {
+      console.error("Erreur lors de la suppression des catégories:", error);
+      throw error;
+    }
+    
+    try {
+      const { data: users } = await supabaseAdmin
+        .from("User")
+        .select("id")
+        .eq("domainId", id);
+      
+      if (users && users.length > 0) {
+        const userIds = users.map(u => u.id);
+        await supabaseAdmin
+          .from("Session")
+          .delete()
+          .in("userId", userIds);
+        console.log("Sessions supprimées");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la suppression des sessions:", error);
+    }
+    
+    try {
+      const { data: users } = await supabaseAdmin
+        .from("User")
+        .select("id")
+        .eq("domainId", id);
+      
+      if (users && users.length > 0) {
+        const userIds = users.map(u => u.id);
+        await supabaseAdmin
+          .from("FolderUser")
+          .delete()
+          .in("userId", userIds);
+        console.log("Relations FolderUser supprimées");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la suppression des relations FolderUser:", error);
+    }
+    
+    try {
+      const { error: usersError } = await supabaseAdmin
+        .from("User")
+        .delete()
+        .eq("domainId", id);
+      
+      if (usersError) throw usersError;
+      console.log("Utilisateurs supprimés");
+    } catch (error) {
+      console.error("Erreur lors de la suppression des utilisateurs:", error);
+      throw error;
+    }
+    
+    try {
+      const { error } = await supabaseAdmin
+        .from("Domain")
+        .delete()
+        .eq("id", id);
+      
+      if (error) throw error;
+      console.log("Domaine supprimé avec succès");
+    } catch (error) {
+      console.error("Erreur lors de la suppression du domaine:", error);
+      throw error;
+    }
   }
 };
 
