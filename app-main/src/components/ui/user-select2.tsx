@@ -98,9 +98,14 @@ export const UserSelect2 = ({
   const editInputRef = useRef<HTMLInputElement>(null);
   const newUserInputRef = useRef<HTMLInputElement>(null);
 
-  const filteredUsers = users.filter((user) =>
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users
+    .filter((user) => user.email.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => {
+      // Trier pour mettre les administrateurs en haut
+      if (a.role === Role.ADMIN && b.role !== Role.ADMIN) return -1;
+      if (a.role !== Role.ADMIN && b.role === Role.ADMIN) return 1;
+      return 0;
+    });
 
   useEffect(() => {
     if (editingId && editInputRef.current) {
@@ -219,16 +224,16 @@ export const UserSelect2 = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={Role.USER}>
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      Utilisateur
-                    </div>
-                  </SelectItem>
                   <SelectItem value={Role.ADMIN}>
                     <div className="flex items-center gap-2">
                       <Crown className="h-4 w-4" />
                       Administrateur
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={Role.USER}>
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Utilisateur
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -320,16 +325,16 @@ export const UserSelect2 = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value={Role.USER}>
-                              <div className="flex items-center gap-2">
-                                <User className="h-4 w-4" />
-                                Utilisateur
-                              </div>
-                            </SelectItem>
                             <SelectItem value={Role.ADMIN}>
                               <div className="flex items-center gap-2">
                                 <Crown className="h-4 w-4" />
                                 Administrateur
+                              </div>
+                            </SelectItem>
+                            <SelectItem value={Role.USER}>
+                              <div className="flex items-center gap-2">
+                                <User className="h-4 w-4" />
+                                Utilisateur
                               </div>
                             </SelectItem>
                           </SelectContent>

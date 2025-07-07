@@ -18,8 +18,9 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useMutationDeleteUser } from "@/hooks/user/useMutationDeleteUser";
 import { useMutationModifyUser } from "@/hooks/user/useMutationModifyUser";
-import { Role } from "@prisma/client";
 import { useCallback, useState } from "react";
+
+type Role = 'USER' | 'MODERATOR' | 'ADMIN' | 'SUPER_ADMIN';
 
 interface Props {
   id: string;
@@ -67,8 +68,8 @@ const UserItem = ({ id, email, role }: Props) => {
             <SelectValue placeholder="Role de l'utilisateur" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={Role.USER}>Utilisateur</SelectItem>
-            <SelectItem value={Role.ADMIN}>Administrateur</SelectItem>
+            <SelectItem value="ADMIN">Administrateur</SelectItem>
+            <SelectItem value="USER">Utilisateur</SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -10,23 +10,23 @@ const nextConfig = withPWA({
     if (isServer) {
       config.externals = [
         ...config.externals,
-        'bufferutil',
-        'utf-8-validate',
-        'supports-color',
+        "bufferutil",
+        "utf-8-validate",
+        "supports-color",
       ];
     }
-    
+
     config.resolve.fallback = {
       ...config.resolve.fallback,
-      'bufferutil': false,
-      'utf-8-validate': false,
-      'supports-color': false,
+      bufferutil: false,
+      "utf-8-validate": false,
+      "supports-color": false,
     };
-    
+
     return config;
   },
   experimental: {
-    serverComponentsExternalPackages: ['@supabase/supabase-js'],
+    serverComponentsExternalPackages: ["@supabase/supabase-js"],
   },
   swcMinify: true,
   compiler: {

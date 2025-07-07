@@ -3,7 +3,6 @@ import { Input } from "@/components/ui/input";
 import { useMutationCreateUser } from "@/hooks/user/useMutationCreateUser";
 import { useQueryUsersDomain } from "@/hooks/user/useQueryUsersDomain";
 import { useCallback, useEffect, useState } from "react";
-import { Role } from "@prisma/client";
 import {
   Select,
   SelectContent,
@@ -13,11 +12,13 @@ import {
 } from "@/components/ui/select";
 import UserItem from "./UserItem";
 
+type Role = 'USER' | 'MODERATOR' | 'ADMIN' | 'SUPER_ADMIN';
+
 const UserManage = () => {
   const createUserMutation = useMutationCreateUser();
   const { data, isLoading, isError } = useQueryUsersDomain();
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState(Role.USER);
+  const [role, setRole] = useState<Role>("USER");
   const [numberOfUsers, setNumberOfUsers] = useState(0);
   const [openDialog, setOpenDialog] = useState(false);
 
@@ -43,13 +44,13 @@ const UserManage = () => {
           placeholder="Email"
           required
         />
-        <Select defaultValue={Role.USER}>
+        <Select defaultValue="USER">
           <SelectTrigger>
             <SelectValue placeholder="Role de l'utilisateur" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={Role.USER}>Utilisateur</SelectItem>
-            <SelectItem value={Role.ADMIN}>Administrateur</SelectItem>
+            <SelectItem value="ADMIN">Administrateur</SelectItem>
+            <SelectItem value="USER">Utilisateur</SelectItem>
           </SelectContent>
         </Select>
         <Button type="submit" className="md:w-80" onClick={handleCreateUser}>
@@ -58,14 +59,20 @@ const UserManage = () => {
       </form>
       <div className="flex flex-col gap-4 md:gap-2">
         {data &&
-          data.map((user) => (
-            <UserItem
-              key={user.id}
-              id={user.id}
-              email={user.email ?? ""}
-              role={(user.role as Role) ?? Role.USER}
-            />
-          ))}
+          data
+            .sort((a, b) => {
+              if (a.role === 'ADMIN' && b.role !== 'ADMIN') return -1;
+              if (a.role !== 'ADMIN' && b.role === 'ADMIN') return 1;
+              return 0;
+            })
+            .map((user) => (
+              <UserItem
+                key={user.id}
+                id={user.id}
+                email={user.email ?? ""}
+                role={(user.role as Role) ?? "USER"}
+              />
+            ))}
       </div>
     </div>
   );
